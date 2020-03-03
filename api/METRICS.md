@@ -33,13 +33,14 @@ acc_ratio = accuracy_score_ratio(y_true, y_pred, sensitive_features=sf, **other_
 acc_group_min = accuracy_score_group_min(y_true, y_pred, sensitive_features=sf, **other_kwargs)
 ```
 
-## Functions
+## Proposal
 
 *Function signatures*
 
 ```python
 metric_by_group(metric, y_true, y_pred, *, sensitive_features, **other_kwargs)
-# return the summary for the provided metrics
+# return the summary for the provided `metric`, where `metric` has the signature
+# metric(y_true, y_pred, **other_kwargs)
 
 make_metric_by_group(metric)
 # return a callable object <metric>_by_group:
@@ -51,7 +52,7 @@ ratio_from_summary(summary)
 group_min_from_summary(summary)
 group_max_from_summary(summary)
 
-# Metric-specific functions returing summary and scalars
+# Metric-specific functions returning summary and scalars
 <metric>_by_group(y_true, y_pred, *, sensitive_features, **other_kwargs)
 <metric>_difference(y_true, y_pred, *, sensitive_features, **other_kwargs)
 <metric>_ratio(y_true, y_pred, *, sensitive_features, **other_kwargs)
@@ -59,7 +60,7 @@ group_max_from_summary(summary)
 <metric>_group_max(y_true, y_pred, *, sensitive_features, **other_kwargs)
 ```
 
-*Summary of transformations*
+*Summary of transformations and transformation codes*
 
 |transformation function|output|metric-specific function|code|aif360|
 |-----------------------|------|------------------------|----|------|
@@ -68,7 +69,18 @@ group_max_from_summary(summary)
 |`group_min_from_summary`|min|`<metric>_group_min`|Min| N/A |
 |`group_max_from_summary`|max|`<metric>_group_max`|Max| N/A |
 
-*Supported metric-specific functions*
+*Summary of tasks and task codes*
+
+|task|definition|code|
+|----|----------|----|
+|binary classification|labels and predictions are in {0,1}|class|
+|probabilistic binary classification|labels are in {0,1}, predictions are in [0,1] and correspond to estimates of P(y\|x)|prob|
+|randomized binary classification|labels are in {0,1}, predictions are in [0,1] and represent the probability of drawing y=1 in a randomized decision|class-rand|
+|regression|labels and predictions are real-valued|reg|
+
+*Predefined metric-specific functions*
+
+* variants: D, R, Min, Max refer to the transformations from the table above; G refers to `<metric>_by_group`.
 
 |metric|variants|task|notes|aif360|
 |------|--------|-----|----|------|
@@ -76,7 +88,8 @@ group_max_from_summary(summary)
 |`demographic_parity`| D,R | class | `selection_rate_difference`, `selection_rate_ratio` | `statistical_parity_difference`, `disparate_impact`|
 |`accuracy_score`| G,D,R,Min | class | sklearn | `accuracy` |
 |`balanced_accuracy_score` | G | class | sklearn | - |
-|`mean_absolute_error` | G,D,R,Max | class,reg | sklearn | class only: `error_rate`
+|`mean_absolute_error` | G,D,R,Max | class, reg | sklearn | class only: `error_rate` |
+|`confusion_matrix` | G | class | sklearn | `binary_confusion_matrix` |
 |`false_positive_rate` | G,D,R | class | | &#x2713; |
 |`false_negative_rate` | G | class | | &#x2713; |
 |`true_positive_rate` | G,D,R | class | | &#x2713; |
@@ -87,5 +100,13 @@ group_max_from_summary(summary)
 |`f1_score`| G | class | sklearn | - |
 |`roc_auc_score`| G | prob | sklearn | - |
 |`log_loss`| G | prob | sklearn | - |
-|`mean_squared_error`| G | prob,reg | sklearn | - |
+|`mean_squared_error`| G | prob, reg | sklearn | - |
 |`r2_score`| G | reg | sklearn | - |
+
+## Dashboard questions
+
+1. Should we enable regression metrics for probabilistic classification?
+  * `mean_absolute_error`, `mean_squared_error`, `mean_squared_error(...,squared=False)`
+1. Should we introduce balanced error metrics for probabilistic classification?
+  * `balanced_mean_{squared,absolute}_error`, `balanced_log_loss`
+1. Do we keep `mean_prediction` and `mean_{over,under}prediction`?
