@@ -104,11 +104,3 @@ group_max_from_summary(summary)
 |`log_loss`| G | prob | sklearn | - |
 |`mean_squared_error`| G | prob, reg | sklearn | - |
 |`r2_score`| G | reg | sklearn | - |
-
-## Dashboard questions
-
-1. Should we enable regression metrics for probabilistic classification?
-   * `mean_absolute_error`, `mean_squared_error`, `mean_squared_error(...,squared=False)`
-1. Should we introduce balanced error metrics for probabilistic classification?
-   * `balanced_mean_{squared,absolute}_error`, `balanced_log_loss`
-1. Do we keep `mean_prediction` and `mean_{over,under}prediction`?
