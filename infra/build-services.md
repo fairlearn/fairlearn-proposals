@@ -1,10 +1,11 @@
-# Choice of Build Pipelines
+# Choice of Pipelines
 
-Currently, our builds run on [Azure Dev Ops Pipelines](https://dev.azure.com/responsibleai/fairlearn/_build) (hereafter ADO).
+Currently, our pipelines run on [Azure Dev Ops Pipelines](https://dev.azure.com/responsibleai/fairlearn/_build) (hereafter ADO).
 This was an easy default choice for a project growing out of work from Microsoft Research.
 We were already familiar with ADO, and when we need more resources, linking to subscriptions owned by the AzureML team is straightforward.
 However, using ADO could create a false perception as to the degree of control Microsoft exerts over Fairlearn.
-We want Fairlearn to be a good open source citizen.
+We want Fairlearn to be a good open source citizen, and despite recent improvements Microsoft is not always perceived well in this regard.
+Furthermore, while ADO and GitHub have federated authentication, ADO is still a separate site to visit, which can be jarring to users.
 
 ## An Alternative: GitHub Actions
 
@@ -21,7 +22,7 @@ Not only does Actions lack templating, but there is no clear roadmap as to when 
 In the long term, moving our build and release pipelines to GitHub Actions appears to be the logical choice.
 We will be a better open source citizen while keeping the same functionality.
 
-## Short Term Plan: Organising the move
+## Short Term Plan: Planning the move
 
 There are two basic ways of organising the move, both with their own advantages and disadvantages:
 1. Leave existing ADO pipelines as-is, and add any new pipelines in GitHub Actions.
@@ -29,8 +30,8 @@ When Actions supports templates, migrate off ADO pipelines
 1. Stick to ADO until GitHub Actions supports templates
 
 Creating all new pipelines in GitHub Actions avoids creating more ADO debt to convert later.
-However, this leaves us supporting two build systems for an indefinite period.
+However, this leaves us supporting two pipeline systems for an indefinite period.
 Also, if the new pipelines have significant common steps, then Actions will require us to duplicate those until Actions has templating.
 
-Keeping to ADO will have all our builds in a single place.
+Keeping to ADO will have all our pipelines in a single place.
 However, we will also have more pipelines to switch when we make the change.
