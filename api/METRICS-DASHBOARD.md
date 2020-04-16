@@ -78,7 +78,7 @@ Issues with the status quo:
     ...
   ]
 }
-
+```
 
 ### Part II: How to remove duplication
 
