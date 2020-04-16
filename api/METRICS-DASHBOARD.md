@@ -17,55 +17,67 @@ Issues with the status quo:
 
 ### Part I: More general dashboard dictionary
 
-```
-{
+```python
+{ 
   "prediction_type":  "binary_classification" or "probabilistic_binary_classification" or "regression",
-  "y_true": float[],
-  "y_pred": float[][],
-  "sensitive_features": [
-    {
-      "column_name": String,
-      "column_data": int[],
-      "value_names": string[]
+  "array_bindings": {   # all 1D arrays, including features and predictior vectors, are here
+    "<array_key>" : {   # the keys can be arbitrary strings; not sure we need to force any convention, but see examples below
+      "name": string,   # the name of a feature would be the feature name, of a prediction vector would be the model name
+      "values": number[],  
+      "value_names": string[],       # an optional field to encode categorical data   
     },
+    "sensitive_feature gender" : {   # an example feature
+      "name": "gender",
+      "values": [0, 1, 0, 0, 2],
+      "value_names": ["female", "male", "non-binary"],
+    },
+    "y_pred model0" : {      # an example prediction vector             
+      "name": "model0",
+      "values": [0, 0, 1, 1, 0],
+    },
+    "y_true": {
+      "name": "y_true",
+      "values": [0, 1, 1, 1, 0],
+    },
+    "sample_weight": {
+      "name": "sample_weight",
+      "values": [0.1, 0.3, 1, 0.9],
+    }
     ...
-  ],
-  "metrics": [
-    [
-      {
-        "<metric_fct>" :  <metric_result_dict>,
-        ...
+  },
+  "cache" : [
+    {
+      "function": string,   # python function name; we could either limit to fairlearn.metrics
+                            # or use fully qualified names
+      "arguments": {
+        "<array_argument>": "<array_key>" or null,   # array-valued arguments are matched with array bindings
+        "<numeric_argument>": number or null,        # we should also support numeric arguments, strings, booleans
+        "<string_argument>": string or null,         # null corresponds to None
+        "<boolean_argument>": boolean or null,
       },
-      ...
-    ]
-  ]
-}
-```
-
-Where `metrics[i][j]["<metric_fct>"]` should correspond to the result of the call
-```
-<metric_fct>(y_true, y_pred[i], sensitive_features[j])
-```
-If the result of the call is a dictionary, then we use that dictionary as `<metric_result_dict>`. If the result is a scalar `x`, we could use the dictionary `{ "value": x }`.
-
-#### What's still missing here:
-
-The above is incomplete, because we need to enable caching results for the calls of the form
-```
-<metric_fct>(y_true, y_pred[i], sensitive_features[j], arg1=val_arg1, arg2=val_arg2, ...)
-```
-One idea would be to use something like:
-```
-{
-  "<metric_fct>": [
-    {
-      "arguments": { "arg1": val_arg1, "arg2": val_arg2, ...},
-      "result": <metric_result_dict>
+      "return_value": number or string or boolean or null or dict,
+                                                     # dict could be encoded as { "keys": any[], "values": any[] }
+    },
+    { # an example
+      "function": "fbeta_score_group_summary",
+      "arguments": {
+        "y_true": "y_true",
+        "y_pred": "y_pred model0",
+        "sensitive_features": "sensitive_feature gender",
+        "sample_weight": "sample_weight",
+        "beta": 0.3,
+      },
+      "return_value": {
+        "overall": 0.11,      
+        "by_group": {
+          "keys": [0, 1, 2],
+          "values": [0.15, 0.04, 0.03],
+        }
+      },
     },
     ...
   ]
 }
-```
 
 
 ### Part II: How to remove duplication
