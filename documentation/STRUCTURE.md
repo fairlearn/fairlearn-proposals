@@ -64,7 +64,9 @@ The user guide explains all parts of Fairlearn by providing context that wouldn'
 
 1. Assessment
     1. Metrics
+        1. ...
     1. Visualizations
+        1. ...
 1. Mitigation
     1. Reductions methods
         1. Exponentiated Gradient
@@ -131,12 +133,21 @@ Putting it all together:
 
 - deploy through fairlearn.org
   - landing page will be provided by a designer, everything else from the Fairlearn project repositories
+  - CI should generate documentation and make it available at PR-time for reviewers to check
   - all pages are reachable through fairlearn.org
   - https for fairlearn.org (currently only http works)
   - remove API doc from readthedocs
 - ensure the navigation from homepage to the other sections works
   - manual testing?
   - automated testing? (also check for broken links)
+
+## Development process
+
+We need to document all the processes around generating documentation. Specifically, we need to document how one can
+
+- build/generate the documentation and subsequently view it
+- develop case studies that end up in python files, but perhaps while creating them using Jupyter
+- get documentation changes into the Fairlearn repository (PR with Ci generating documentation and storing it as artifacts)
 
 ## Outstanding questions
 
