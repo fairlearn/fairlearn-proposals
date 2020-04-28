@@ -33,19 +33,26 @@ From there visitors have various paths to explore content depending on what they
 
 ```
 website
-|--- Getting Started
+|--- Quickstart
 |--- API reference
 |--- User guide
-|--- Case studies
+|--- Example Notebooks
+|--- Contributor guide
 |--- Community
 ```
 
-### Getting Started
+### Quickstart
 
 This page provides information on
 - Installation
-- terminology (or at least a link to it)
-- where to go next, e.g. tutorials, videos, articles
+- brief introduction/framing of fairness in ML
+  - including basic terminology (perhaps link to more comprehensive section on a different page)
+- walk-through
+  - load data
+  - mitigate disparity of an estimator
+  - evaluate a few metrics
+  - run the dashboard
+- links showing where to go next, e.g. links to section of the user guide
 
 Installation should cover various platforms, which should be very straightforward. Any reoccurring patterns in reported issues should be listed, as well as how to troubleshoot them. It may end up similar to [this guide](https://scikit-learn.org/dev/install.html)).
 
@@ -53,6 +60,8 @@ Example:
 
 - [pandas](https://pandas.pydata.org/getting_started.html)
 - [scikit-learn](https://scikit-learn.org/dev/getting_started.html)
+
+This should be very similar to what we currently have in our README, so a lot of the content won't be entirely new.
 
 ### API reference
 
@@ -62,17 +71,22 @@ This is simply the generated documentation from our code. Currently we host this
 
 The user guide explains all parts of Fairlearn by providing context that wouldn't fit into the code documentation such as mathematical derivations, but without using application-specific context (as we'd find it in the "case studies"). The guides are grouped by topic, e.g.
 
+1. What we mean by fairness in ML - should properly frame fairness as a sociotechnical challenge
 1. Assessment
+    1. Fairness definitions
+        1. ...
     1. Metrics
         1. ...
-    1. Visualizations
+    1. Dashboard
         1. ...
 1. Mitigation
+    1. Postprocessing
+        1. Threshold Optimizer
     1. Reductions methods
         1. Exponentiated Gradient
         1. Grid Search
-    1. Postprocessing
-        1. Threshold Optimizer
+
+Importantly, the code samples should be minimal. For comprehensive examples we have the "Example Notebooks" section. In comparison, this section is more like a tutorial. It's about showing how to use our API while elaborating on mathemtical background that we can't explain in API documentation
 
 Examples:
 
@@ -85,9 +99,9 @@ Of our current notebooks the following may be most suitable as "user guides":
 - [Grid Search for Binary Classification](https://github.com/fairlearn/fairlearn/blob/master/notebooks/Grid%20Search%20for%20Binary%20Classification.ipynb) - the purpose is mostly to show Grid Search's functionality; perhaps it may need to be trimmed down to the essentials about Grid Search
 - [Grid Search with Census Data](https://github.com/fairlearn/fairlearn/blob/master/notebooks/Grid%20Search%20with%20Census%20Data.ipynb) - similar to the previous notebook it covers Grid Search; we could leverage some of this for a user guide for Grid Search, or alternatively for the dashboard visualizations
 
-### Case studies
+### Example Notebooks
 
-The purpose of fairness case studies is to walk through an application of Fairlearn in detail. Any application of a fairness toolkit needs to be done with great care while taking into account an entire range of concerns due to the sociotechnical nature of fairness. The showcased case studies will provide the space to cover scenarios in depth. The focus is not only on showing example usage of the Fairlearn toolkit, but on how to approach fairness in ML in general. We may want to add scenario even if it contains only few of Fairlearn's capabilities, but it otherwise demonstrates a great example of how to build AI responsibly.
+The purpose of the example notebooks is to walk through an application of Fairlearn in detail. Any application of a fairness toolkit needs to be done with great care while taking into account an entire range of concerns due to the sociotechnical nature of fairness. The showcased notebooks will provide the space to cover scenarios in depth. The focus is not only on showing example usage of the Fairlearn toolkit, but on how to approach fairness in ML in general. We may want to add a scenario even if it contains only few of Fairlearn's capabilities, but it otherwise demonstrates a great example of how to build AI responsibly.
 
 All the case studies should be downloadable as Jupyter notebooks and/or Python source code, and be launchable in [Binder](https://mybinder.org/) and perhaps other platforms.
 
@@ -99,9 +113,27 @@ Of our current notebooks the following would be most closely aligned with this s
 - [Binary Classification with the UCI Credit-card Default Dataset](https://github.com/fairlearn/fairlearn/blob/master/notebooks/Binary%20Classification%20with%20the%20UCI%20Credit-card%20Default%20Dataset.ipynb)
 - [Mitigating Disparities in Ranking from Binary Data](https://github.com/fairlearn/fairlearn/blob/master/notebooks/Mitigating%20Disparities%20in%20Ranking%20from%20Binary%20Data.ipynb)
 
+### Contributor Guide
+
+A lot of this is already captured through our CONTRIBUTING.md file. We want to ensure people know
+
+- ways to contribute
+    - It should be clear how people can reach out if they want to contribute to Fairlearn, and where they can find small items to get started.
+- the respository sturcture / organization of work
+- Fairlearn proposals
+- how to contribute code
+    - Moments
+    - ...
+- how to contribute notebooks
+    - style guide
+    - good workflow for editing (from `.ipynb` to `.py` etc.)
+    - ...
+
+[This](https://scikit-learn.org/dev/developers/contributing.html) is an example of how scikit-learn handles it through a contribution guide that is somewhat similar to ours that we currently have in the repo.
+
 ### Community
 
-This page should provide basic information about how to reach out in order to ask questions, provide feedback, report bugs or request features. Similarly, it should be clear how people can reach out if they want to contribute to Fairlearn, and where they can find small items to get started. [This](https://scikit-learn.org/dev/developers/contributing.html) is an example of how scikit-learn handles it through a contribution guide that is somewhat similar to ours that we currently have in the repo.
+Community is obviously related to the Contributor Guide, but it goes a little bit further. The community is made up of contributors and users, industry practitioners, researchers, and students. This page should provide basic information about how to reach out in order to ask questions, provide feedback, report bugs or request features. This should certainly include communication channels.
 
 We could also write up the history of the project, its roadmap, and how we envision governance to work. The code of conduct should certainly be mentioned as well.
 
@@ -112,16 +144,25 @@ Some projects have a page showing the maintainers as well:
 
 ## Required steps
 
-To properly format math, text, and links across the pages we need to use ReST. Some of our existing documentation may have to be converted from Markdown to ReST, e.g. the terminology page.
-
-We need to find a way to present the dashboard in a website where it can't be interactive. Perhaps with screenshots for the user guides, but the case studies are downloadable as Jupyter notebooks. [Could we perhaps pre-calculate all metrics and show the interactive dashboard in the case studies?]
-
-We already have the examples gallery thanks to Adrin's work on sphinx-gallery: https://fairlearn.readthedocs.io/en/latest/index.html
-There will be plenty of work to
-
-- convert existing notebooks to case studies (or user guides)
-- write all user guides
-- write the installation guide
+1. Get GitHub Pages page/repository up and running
+1. Set up CI to deploy current documentation there automatically
+1. Set up CI to make documentation changes viewable, i.e. the generated HTML pages need to be visible (CircleCI)
+1. Establish webpage section as outlined above (Quickstart, User guide, etc.)
+1. Convert existing content, including reformatting markdown as ReST.
+    - We already have the examples gallery thanks to Adrin's work on sphinx-gallery: https://fairlearn.readthedocs.io/en/latest/index.html There will be plenty of work to convert existing notebooks to case studies (or user guides) as mentioned in earlier sections. If this is very laborious we can consider shortcuts for the short-term such as linking to GitHub notebooks, or using a Jupyter plugin for sphinx.
+    - Related: Document notebook development process (see separate section below)
+1. Write remaining content for all of them.
+1. We need to find a way to present the dashboard in a website where it can't be interactive. Perhaps with screenshots for the user guides, but the case studies are downloadable as Jupyter notebooks. [Could we perhaps pre-calculate all metrics and show the interactive dashboard in the example notebooks? There may be a sphinx extension for typescript]
+1. integrate landing page (will be provided by a designer), everything else from the Fairlearn project repositories
+1. add style template from ?
+1. deploy through fairlearn.org
+    - check that all pages are reachable through fairlearn.org
+    - https for fairlearn.org (currently only http works)
+    - remove API doc from readthedocs
+1. ensure the navigation from homepage to the other sections works
+    - manual testing?
+    - automated testing? (also check for broken links)
+1. Add an example notebook to show how to use estimators from various packages with our mitigation techniques.
 
 The repository structure should look similar to [what scikit-learn has](https://github.com/scikit-learn/scikit-learn/tree/master/doc):
 
@@ -129,17 +170,9 @@ The repository structure should look similar to [what scikit-learn has](https://
 - API documentation comes directly from the code documentation
 - case studies live in a separate top-level directory (scikit-learn calls it `examples`) as python files
 
-Putting it all together:
+### Less urgent
 
-- deploy through fairlearn.org
-  - landing page will be provided by a designer, everything else from the Fairlearn project repositories
-  - CI should generate documentation and make it available at PR-time for reviewers to check
-  - all pages are reachable through fairlearn.org
-  - https for fairlearn.org (currently only http works)
-  - remove API doc from readthedocs
-- ensure the navigation from homepage to the other sections works
-  - manual testing?
-  - automated testing? (also check for broken links)
+- Switch to numpy doc format; benefits explained in [this issue](https://github.com/fairlearn/fairlearn/issues/314); definitely worthwhile, but not as urgent as other items that get the webpage started
 
 ## Development process
 
@@ -149,6 +182,8 @@ We need to document all the processes around generating documentation. Specifica
 - develop case studies that end up in python files, but perhaps while creating them using Jupyter
 - get documentation changes into the Fairlearn repository (PR with Ci generating documentation and storing it as artifacts)
 
+Document exactly which tools/plugins we recommend, e.g. VSCode extensions or Jupytext, etc.
+
 ## Outstanding questions
 
 1. Do we want users to cite us in any way? See [this example](https://scikit-learn.org/dev/about.html#citing-scikit-learn).
@@ -156,6 +191,5 @@ We need to document all the processes around generating documentation. Specifica
 1. Do we want a "News" section? It could list recent updates such as new versions (link to changelog), but also upcoming presentations, references to conference papers, blog posts, etc.
 1. Do we want a blog? [Example: pandas](https://pandas.pydata.org/community/blog/)
 1. Do we want to highlight differences to other fairness toolkits anywhere?
-1. Do we want some sort of "Getting started" page?
 1. Should we have a glossary? [Example: scikit-learn](https://scikit-learn.org/dev/glossary.html)
 1. Should we have a FAQ section? [Example: scikit-learn](https://scikit-learn.org/dev/faq.html)
