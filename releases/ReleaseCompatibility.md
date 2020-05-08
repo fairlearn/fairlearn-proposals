@@ -17,6 +17,7 @@ However, we do need to start to move in that direction, or we will not be able t
 ## Proposed Solution
 
 Starting with `v0.5.0` we should make a commitment that anything which works at `v0.n.m_0` will also work for `v0.n.m` so long as `m >= m_0`.
+However, we do *not* guarantee compatibility between `n` and `n+1` in this scheme (although we would seek to minimise breakage).
 
 We will enforce this using builds which run the notebooks currently in the repository against versions of Fairlearn published on PyPI.
 We already have a build which checks that our notebooks can run against the latest published version of Fairlearn (due to the metrics changes, this build is a steady red); this would be an extension of that functionality.
@@ -27,3 +28,5 @@ In order to support less mature functionality, we should also add a `fairlearn.e
 Anything in there will be subject to breaking at any time.
 There would be a parallel subdirectory of notebooks which rely on such functionality.
 We will also automatically check that any notebook in that directory depends on `fairlearn.experimental`.
+Using an `experimental` namespace would not have helped with our current set of breaks, since the changes were being made to core functionality.
+Rather, this is to give future developers a space where they can get feedback on new functionality without immediately being committed to supporting their speculative design decisions.
