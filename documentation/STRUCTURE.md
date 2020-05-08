@@ -19,9 +19,9 @@ The documentation should be
 - discoverable, ideally in a single place as opposed to multiple
 - clear
 - concise when describing individual pieces of functionality
-- detailed when describing entire application scenarios, e.g. in the form of case studies
+- detailed when describing entire application scenarios, e.g. in the form of example notebooks
 - available for the latest version, but if possible also for past versions ([example](https://scikit-learn.org/dev/versions.html))
-- maintainable: it should be simple for maintainers to update/validate
+- maintainable: it should be simple or at least clear for maintainers how to update/validate
 - without ads (readthedocs always has ads that are shown alongside our documentation)
 
 ## Proposal
@@ -65,13 +65,20 @@ This should be very similar to what we currently have in our README, so a lot of
 
 ### API reference
 
-This is simply the generated documentation from our code. Currently we host this in readthedocs, but we want to include it on our webpage. A good example for this is [scikit-learn](https://scikit-learn.org/dev/modules/classes.html)
+This is simply the generated documentation from our code using docstrings. Currently we host this in readthedocs, but we want to include it on our webpage. A good example for this is [scikit-learn](https://scikit-learn.org/dev/modules/classes.html)
 
 ### User guide
 
-The user guide explains all parts of Fairlearn by providing context that wouldn't fit into the code documentation such as mathematical derivations, but without using application-specific context (as we'd find it in the "case studies"). The guides are grouped by topic, e.g.
+The user guide explains all parts of Fairlearn by providing context that wouldn't fit into the code documentation such as mathematical derivations, but without using application-specific context (as we'd find it in the "example notebooks"). The guides are grouped by topic, e.g.
 
-1. What we mean by fairness in ML - should properly frame fairness as a sociotechnical challenge
+1. What we mean by fairness in ML - should properly frame fairness as a sociotechnical challenge incl.
+    - considering harms instead of biases
+    - why "debiasing" is not possible
+    - fairness through unawareness and why it is not sufficient
+    - the ML lifecycle and how individual stages can affect fairness
+    - AI systems need to be designed around the people they affect (specifically subpopulations that may be harmed by a system)
+    - some reference to the [fairness checklist](https://www.microsoft.com/en-us/research/publication/co-designing-checklists-to-understand-organizational-challenges-and-opportunities-around-fairness-in-ai/)
+    - ...
 1. Assessment
     1. Fairness definitions
         1. ...
@@ -103,9 +110,9 @@ Of our current notebooks the following may be most suitable as "user guides":
 
 The purpose of the example notebooks is to walk through an application of Fairlearn in detail. Any application of a fairness toolkit needs to be done with great care while taking into account an entire range of concerns due to the sociotechnical nature of fairness. The showcased notebooks will provide the space to cover scenarios in depth. The focus is not only on showing example usage of the Fairlearn toolkit, but on how to approach fairness in ML in general. We may want to add a scenario even if it contains only few of Fairlearn's capabilities, but it otherwise demonstrates a great example of how to build AI responsibly.
 
-All the case studies should be downloadable as Jupyter notebooks and/or Python source code, and be launchable in [Binder](https://mybinder.org/) and perhaps other platforms.
+All the example notebooks should be downloadable as Jupyter notebooks and Python source code, and be launchable in [Binder](https://mybinder.org/) or a similar platform.
 
-Note: [scikit-learn](https://scikit-learn.org/dev/auto_examples/index.html) refers to these as "Examples".
+Note: [scikit-learn](https://scikit-learn.org/dev/auto_examples/index.html) refers to these as "Examples". However, they use them to highlight a specific aspect of a feature/model. For Fairlearn it would be more about a properly framed example from a fairness point of view.
 
 Of our current notebooks the following would be most closely aligned with this section:
 
@@ -133,9 +140,14 @@ A lot of this is already captured through our CONTRIBUTING.md file. We want to e
 
 ### Community
 
-Community is obviously related to the Contributor Guide, but it goes a little bit further. The community is made up of contributors and users, industry practitioners, researchers, and students. This page should provide basic information about how to reach out in order to ask questions, provide feedback, report bugs or request features. This should certainly include communication channels.
+Community is obviously related to the Contributor Guide, but it goes a little bit further. The community is made up of contributors and users, industry practitioners, researchers, and students. This page should provide basic information about how to reach out in order to ask questions, provide feedback, report bugs or request features. This should certainly include communication channels. The code of conduct should certainly be a part of this as well.
 
-We could also write up the history of the project, its roadmap, and how we envision governance to work. The code of conduct should certainly be mentioned as well.
+We need to have an "About Fairlearn" page (that should be discoverable, perhaps linked from the landing page) and state
+
+- Who does the project serve? Who are current users? 
+- the history of the project
+- the roadmap
+- governance
 
 Some projects have a page showing the maintainers as well:
 
@@ -152,7 +164,7 @@ Some projects have a page showing the maintainers as well:
     - We already have the examples gallery thanks to Adrin's work on sphinx-gallery: https://fairlearn.readthedocs.io/en/latest/index.html There will be plenty of work to convert existing notebooks to case studies (or user guides) as mentioned in earlier sections. If this is very laborious we can consider shortcuts for the short-term such as linking to GitHub notebooks, or using a Jupyter plugin for sphinx.
     - Related: Document notebook development process (see separate section below)
 1. Write remaining content for all of them.
-1. We need to find a way to present the dashboard in a website where it can't be interactive. Perhaps with screenshots for the user guides, but the case studies are downloadable as Jupyter notebooks. [Could we perhaps pre-calculate all metrics and show the interactive dashboard in the example notebooks? There may be a sphinx extension for typescript]
+1. We need to find a way to present the dashboard in a website where it can't be interactive. Perhaps with screenshots for the user guides, but the example notebooks are downloadable as Jupyter notebooks. [Could we perhaps pre-calculate all metrics and show the interactive dashboard in the example notebooks? There may be a sphinx extension for typescript]
 1. integrate landing page (will be provided by a designer), everything else from the Fairlearn project repositories
 1. add style template from ?
 1. deploy through fairlearn.org
@@ -166,9 +178,9 @@ Some projects have a page showing the maintainers as well:
 
 The repository structure should look similar to [what scikit-learn has](https://github.com/scikit-learn/scikit-learn/tree/master/doc):
 
-- top-level doc directory has all the ReST files for the webpage except for API documentation and case studies
+- top-level doc directory has all the ReST files for the webpage except for API documentation and example notebooks
 - API documentation comes directly from the code documentation
-- case studies live in a separate top-level directory (scikit-learn calls it `examples`) as python files
+- example notebooks live in a separate top-level directory (scikit-learn calls it `examples`) as python files
 
 ### Less urgent
 
@@ -179,7 +191,7 @@ The repository structure should look similar to [what scikit-learn has](https://
 We need to document all the processes around generating documentation. Specifically, we need to document how one can
 
 - build/generate the documentation and subsequently view it
-- develop case studies that end up in python files, but perhaps while creating them using Jupyter
+- develop example notebooks that end up in python files, but perhaps while creating them using Jupyter
 - get documentation changes into the Fairlearn repository (PR with Ci generating documentation and storing it as artifacts)
 
 Document exactly which tools/plugins we recommend, e.g. VSCode extensions or Jupytext, etc.
@@ -191,5 +203,6 @@ Document exactly which tools/plugins we recommend, e.g. VSCode extensions or Jup
 1. Do we want a "News" section? It could list recent updates such as new versions (link to changelog), but also upcoming presentations, references to conference papers, blog posts, etc.
 1. Do we want a blog? [Example: pandas](https://pandas.pydata.org/community/blog/)
 1. Do we want to highlight differences to other fairness toolkits anywhere?
+1. Do we want to have an "ecosystem" page where we mention our relationship with other projects such as [InterpretML](https://github.com/interpretml)
 1. Should we have a glossary? [Example: scikit-learn](https://scikit-learn.org/dev/glossary.html)
 1. Should we have a FAQ section? [Example: scikit-learn](https://scikit-learn.org/dev/faq.html)
