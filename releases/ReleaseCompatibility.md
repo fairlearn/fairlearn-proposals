@@ -30,8 +30,8 @@ However, improved backwards compatibility is still desirable.
 We do not need deprecation policies as elaborate of those of
 [SciKit-Learn](https://numpy.org/neps/nep-0023-backwards-compatibility.html)
 or [NumPy](https://numpy.org/neps/nep-0023-backwards-compatibility.html) - indeed,
-policies such as those would be ridiculous given the size of our code
-and user bases.
+policies such as those would be excessive for Fairlearn, given the
+size of our code and user bases.
 However, we do need to start to move in that direction, or we will
 not be able to grow our user base due to chaos in the code.
 
