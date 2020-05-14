@@ -35,32 +35,16 @@ size of our code and user bases.
 However, we do need to start to move in that direction, or we will
 not be able to grow our user base due to chaos in the code.
 
-## Proposed Solution
+## Support Policy
 
 Starting with `v0.5.0` we should make a commitment that anything which works at `v0.n.m_0` will also work for `v0.n.m` so long as `m >= m_0`.
 However, we do *not* guarantee compatibility between `n` and `n+1` in this scheme (although we would seek to minimise breakage).
-
-We will enforce this using builds which run the notebooks currently
-in the repository against versions of Fairlearn published on PyPI.
-We already have a build which checks that our notebooks can run
-against the latest published version of Fairlearn (due to the metrics
-changes, this build is a steady red); this would be an extension of
-that functionality.
-For full compliance with the above, we will have to devise a means of
-allowing each notebook to specify its `m_0`.
-Our notebooks do not provide comprehensive coverage of Fairlearn, but
-enforcing a constraint like this will be a dramatic improvement over
-the current situation (particularly since new users will likely tryu
-our notebooks first).
+If we have to do `v.n.m.post[i]` releases, we will only support the final `post` release in the chain.
 
 In order to support less mature functionality, we should also add
 a `fairlearn.experimental` package (see [a similar namespace in
 SciKit-Learn](https://scikit-learn.org/stable/modules/classes.html#module-sklearn.experimental)).
 Anything in there will be subject to breaking at any time.
-There would be a parallel subdirectory of notebooks which rely
-on such functionality.
-We will also automatically check that any notebook in that
-directory depends on `fairlearn.experimental`.
 Using an `experimental` namespace would not have helped with our
 current set of breaks, since the changes were being made to core
 functionality.
@@ -72,3 +56,18 @@ At the time of writing, it appears that the dashboard code does
 not use namespaces.
 However, namespaces are supported in TypeScript, and as we develop
 the UX code, we should introduce a similar distinction.
+
+To monitor the required backwards compatibility, each new release
+will have a build pipeline associated with it.
+This pipeline will run the *tests associated with the release tag*
+against the version of Fairlearn in `master`
+This will become part of the PR Gate for `master`, except when
+we are moving from `v0.n` to `v0.n+1`.
+
+## Revised Branching and Release Policy
+
+Our recent releases have been made from `master`, without
+making a release branch.
+While this approach has desirable properties, using release branches
+will work better with the more robust support policy described above.
+
