@@ -61,7 +61,7 @@ To monitor the required backwards compatibility, each new release
 will have a build pipeline associated with it.
 This pipeline will run the *tests associated with the release tag*
 against the version of Fairlearn in `master`.
-In keeping with the note about `post[i]` releases above, the build will only run against the last in the chain.
+In keeping with the note about `post[i]` releases above, the build will only run against the last release in each release branch.
 The build will become part of the PR Gate for `master`, except when
 we are moving from `v0.n` to `v0.n+1`.
 
