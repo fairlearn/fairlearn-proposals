@@ -60,8 +60,9 @@ the UX code, we should introduce a similar distinction.
 To monitor the required backwards compatibility, each new release
 will have a build pipeline associated with it.
 This pipeline will run the *tests associated with the release tag*
-against the version of Fairlearn in `master`
-This will become part of the PR Gate for `master`, except when
+against the version of Fairlearn in `master`.
+In keeping with the note about `post[i]` releases above, the build will only run against the last in the chain.
+The build will become part of the PR Gate for `master`, except when
 we are moving from `v0.n` to `v0.n+1`.
 
 ## Revised Branching and Release Policy
@@ -71,3 +72,32 @@ making a release branch.
 While this approach has desirable properties, using release branches
 will work better with the more robust support policy described above.
 
+For all the `master` and `release` branches, we will require a linear
+history in GitHub.
+This forbids plain `merge` commits, and we will prefer squash merges
+to rebases.
+
+We will keep the `master` branch at `v0.m.n.dev0` at all times,
+indicating that `master` is under active development (although we will
+always seek to keep `master` in a shippable condition).
+Releases will occur from branches.
+
+To create a new release:
+1. Create a branch `release/v.0.n.m`
+1. Remove the `dev0` suffix from the version on the release branch
+   - Bump `master` to `v0.n.m+1.dev0`
+1. Run the release pipeline on the new release branch
+1. Create a GitHub Release corresponding to the new package
+   (hopefully this can be automated)
+1. Create the new build pipeline to monitor backwards compatibility
+
+### Post Releases
+
+We should only put out `post[i]` releases for essential fixes (either
+to algorithms or code) - no new features are allowed.
+In general, fixes should be made in `master` and individually moved
+to the appropriate release branch as required.
+The move will probably best be done with `git rebase -i`, in order to
+preserve a linear history on each branch.
+After the release, create an appropriate GitHub release, and update
+the corresponding backwards compatibility build.
