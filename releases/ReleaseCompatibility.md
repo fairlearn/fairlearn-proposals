@@ -58,13 +58,15 @@ However, namespaces are supported in TypeScript, and as we develop
 the UX code, we should introduce a similar distinction.
 
 To monitor the required backwards compatibility, each new release
-will have a build pipeline associated with it.
-This pipeline will run the *tests associated with the release tag*
-against the version of Fairlearn in `master`.
-In keeping with the note about `post[i]` releases above, the build
-will only run against the last release in each release branch.
-The build will become part of the PR Gate for `master`, except when
-we are moving from `v0.n` to `v0.n+1`.
+branch will have a pipeline for testing backwards compatibility
+associated with it.
+This pipeline will:
+- Checkout Fairlearn itself from `master`
+- Checkout the tests from the tip of the release branch (i.e. if there are `post[i]` releases, only run against the last one)
+- Run the tests
+
+These new pipelines will become part of the PR Gate for `master`,
+except when we are moving from `v0.n` to `v0.n+1`.
 
 ## Revised Branching and Release Policy
 
