@@ -100,8 +100,9 @@ We should only put out `post[i]` releases for essential fixes (either
 to algorithms or code) - no new features are allowed.
 In general, fixes should be made in `master` and individually moved
 to the appropriate release branch as required.
-The move will probably best be done with `git rebase -i`, as is the
-practice in `scikit-learn`.
+The move will probably best be done with `git rebase -i`
+(an interactive rebase), [as is the practice in
+`scikit-learn`](https://github.com/scikit-learn/scikit-learn/blob/master/doc/developers/maintainer.rst).
 This is in order to preserve a linear history on each branch.
 The exact procedure used for this will likely be updated by experience.
 After the release, create an appropriate GitHub release, and update
