@@ -61,7 +61,8 @@ To monitor the required backwards compatibility, each new release
 will have a build pipeline associated with it.
 This pipeline will run the *tests associated with the release tag*
 against the version of Fairlearn in `master`.
-In keeping with the note about `post[i]` releases above, the build will only run against the last release in each release branch.
+In keeping with the note about `post[i]` releases above, the build
+will only run against the last release in each release branch.
 The build will become part of the PR Gate for `master`, except when
 we are moving from `v0.n` to `v0.n+1`.
 
@@ -97,7 +98,9 @@ We should only put out `post[i]` releases for essential fixes (either
 to algorithms or code) - no new features are allowed.
 In general, fixes should be made in `master` and individually moved
 to the appropriate release branch as required.
-The move will probably best be done with `git rebase -i`, in order to
-preserve a linear history on each branch.
+The move will probably best be done with `git rebase -i`, as is the
+practice in `scikit-learn`.
+This is in order to preserve a linear history on each branch.
+The exact procedure used for this will likely be updated by experience.
 After the release, create an appropriate GitHub release, and update
 the corresponding backwards compatibility build.
