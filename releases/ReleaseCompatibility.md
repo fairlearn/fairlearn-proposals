@@ -104,6 +104,8 @@ The move will probably best be done with `git rebase -i`
 (an interactive rebase), [as is the practice in
 `scikit-learn`](https://github.com/scikit-learn/scikit-learn/blob/master/doc/developers/maintainer.rst).
 This is in order to preserve a linear history on each branch.
-The exact procedure used for this will likely be updated by experience.
+The exact procedure used for this will likely be updated by
+experience (specifically in the release instructions in the developer
+guide).
 After the release, create an appropriate GitHub release, and update
 the corresponding backwards compatibility build.
