@@ -92,7 +92,7 @@ To create a new release:
 1. Run the release pipeline on the new release branch
 1. Create a GitHub Release corresponding to the new package
    (hopefully this can be automated)
-1. Create the new build pipeline to monitor backwards compatibility
+1. Create the new ADO pipeline to monitor backwards compatibility
 
 ### Post Releases
 
@@ -108,4 +108,4 @@ The exact procedure used for this will likely be updated by
 experience (specifically in the release instructions in the developer
 guide).
 After the release, create an appropriate GitHub release, and update
-the corresponding backwards compatibility build.
+the corresponding backwards compatibility pipeline.
