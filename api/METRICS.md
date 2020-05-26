@@ -279,7 +279,7 @@ We support two algorithms: `ExponentiatedGradient` and `GridSearch`. They both r
 
   * rename `ConditionalSelectionRate` to `UtilityParity`
 
-  * `BoundedGroupLoss(<loss>, bound=`&zeta;`)`: for all _a_, <br>
+  * `BoundedGroupLoss(<loss>, upper_bound=`&zeta;`)`: for all _a_, <br>
     _loss_(_a_) &le; &zeta;
 
   * remove `ConditionalLossMoment`
