@@ -67,7 +67,8 @@ group_min_from_summary(summary)
 group_max_from_summary(summary)
 
 derived_metric(metric, transformation, y_true, y_pred, *, sensitive_features, **other_kwargs) [TODO]
-# return a metric derived from the provided `metric`, where `metric` has the signature
+# return the value of a metric derived from the provided `metric`, where `metric`
+# has the signature
 #   * metric(y_true, y_pred, **other_kwargs)
 # and `transformation` is a string 'difference', 'ratio', 'group_min' or 'group_max'.
 #
@@ -95,6 +96,8 @@ make_derived_metric(metric, transformation) [TODO]
 |`group_min_from_summary`|min|`<metric>_group_min`|Min| N/A |
 |`group_max_from_summary`|max|`<metric>_group_max`|Max| N/A |
 
+> _Note_: The ratio min/max should evaluate to `np.nan` if min<0.0, and to 1.0 if min=max=0.0.
+
 ### List of predefined metrics
 
 * In the list of predefined metrics, we refer to the following machine learning tasks:
@@ -108,7 +111,7 @@ make_derived_metric(metric, transformation) [TODO]
 
 * For each _base metric_, we provide the list of predefined derived metrics, using D, R, Min, Max to refer to the transformations from the table above, and G to refer to `<metric>_group_summary`. We follow these rules:
   * always provide G (except for demographic parity and equalized odds, which do not make sense as group-level metrics)
-  * provide D and R for confusion-matrix metrics
+  * provide D and R for confusion-matrix-derived metrics
   * provide Min for score functions (worst-case score)
   * provide Max for error/loss functions (worst-case error)
   * for internal API metrics starting with `_`, only provide G
