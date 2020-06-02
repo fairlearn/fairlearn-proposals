@@ -109,3 +109,11 @@ experience (specifically in the release instructions in the developer
 guide).
 After the release, create an appropriate GitHub release, and update
 the corresponding backwards compatibility pipeline.
+
+### Writing up Changes
+
+A related process alteration is needed to our `Changes.md` document.
+Currently, this is written both by and for the developers of Fairlearn.
+Going forward, we should ensure that it is readable by the *users* of Fairlearn.
+For the case of breaking changes, this means that any breaking
+change should be accompanied by migration instructions.
