@@ -6,6 +6,8 @@ Although we are currently pre-`v1.0.0` and hence without particular
 commitments to compatibility (as generally understood - see e.g.
 the [Semantic Versioning Scheme](https://semver.org/)), we should
 work to reduce the number of breaking changes we make.
+The usual Python versioning scheme is
+[described in PEP440](https://www.python.org/dev/peps/pep-0440/).
 
 ## The Problem
 
@@ -40,6 +42,10 @@ not be able to grow our user base due to chaos in the code.
 Starting with `v0.5.0` we should make a commitment that anything which works at `v0.n.m_0` will also work for `v0.n.m` so long as `m >= m_0`.
 However, we do *not* guarantee compatibility between `n` and `n+1` in this scheme (although we would seek to minimise breakage).
 If we have to do `v.n.m.post[i]` releases, we will only support the final `post` release in the chain.
+Note that according to
+[PEP440](https://www.python.org/dev/peps/pep-0440/#post-releases),
+`post[i]` releases should only incorporate documentation fixes, and
+**not** code fixes.
 
 In order to support less mature functionality, we should also add
 a `fairlearn.experimental` package (see [a similar namespace in
@@ -57,13 +63,29 @@ not use namespaces.
 However, namespaces are supported in TypeScript, and as we develop
 the UX code, we should introduce a similar distinction.
 
+### Monitoring Backwards Compatibility
+
 To monitor the required backwards compatibility, each new release
 branch will have a pipeline for testing backwards compatibility
 associated with it.
 This pipeline will:
-- Checkout Fairlearn itself from `master`
-- Checkout the tests from the tip of the release branch (i.e. if there are `post[i]` releases, only run against the last one)
-- Run the tests
+1. Fetch Fairlearn itself from `master`
+1. Fetch the tests from the associated release branch
+1. Run the 'old' tests against the 'new' Fairlearn
+
+The question is then: which tests to run?
+One possible answer is the usual test suite run by the PR Gate
+(that is under `tests/`).
+This could cause problems when there is a code fix which causes changes to 'golden values' in tests.
+While this should be a rare event (assuming we have set numerical tolerances appropriately), it could certainly happen and we would be left with the unpalatable prospect of having to fix the test in the release branch as well.
+
+As an alternative, we can run the contents of the 'old' `examples/` directory against the new Fairlearn package.
+If we are keeping to the backwards compatibility promise outlined above, then these 'old' examples should still run.
+However, the do not have any `assert` statements which could fail due to later bugfixes.
+The simplest way to run the examples would be to build the documentation (which runs them in order to capture text and graphical output).
+Alternatively, we could export the notebooks using the
+[utility in sphinx-gallery](https://sphinx-gallery.github.io/stable/utils.html#convert-python-scripts-into-jupyter-notebooks)
+and run the notebooks through `papermill`.
 
 These new pipelines will become part of the PR Gate for `master`,
 except when we are moving from `v0.n` to `v0.n+1`.
