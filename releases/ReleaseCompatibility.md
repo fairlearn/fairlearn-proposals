@@ -75,17 +75,33 @@ This pipeline will:
 
 The question is then: which tests to run?
 One possible answer is the usual test suite run by the PR Gate
-(that is under `tests/`).
-This could cause problems when there is a code fix which causes changes to 'golden values' in tests.
-While this should be a rare event (assuming we have set numerical tolerances appropriately), it could certainly happen and we would be left with the unpalatable prospect of having to fix the test in the release branch as well.
+(that is, the one under `tests/`).
+This could cause problems when there is a code fix which causes
+changes to 'golden values' in tests.
+While this should be a rare event (assuming we have set
+numerical tolerances appropriately), it could certainly happen
+and we would be left with the unpalatable prospect of having to
+fix the test in the release branch as well.
 
-As an alternative, we can run the contents of the 'old' `examples/` directory against the new Fairlearn package.
-If we are keeping to the backwards compatibility promise outlined above, then these 'old' examples should still run.
-However, the do not have any `assert` statements which could fail due to later bugfixes.
-The simplest way to run the examples would be to build the documentation (which runs them in order to capture text and graphical output).
+As an alternative, we can run the contents of the 'old'
+`examples/` directory against the new Fairlearn package.
+If we are keeping to the backwards compatibility promise
+outlined above, then these 'old' examples should still run.
+The examples do not have any `assert` statements which could
+fail due to later bugfixes.
+The test coverage provided by the examples is not as
+comprehensive as that of the main test suite, but the examples
+do represent common user scenarios.
+
+The simplest way to run the examples would be to build the
+documentation (which runs them in order to capture text and
+graphical output).
 Alternatively, we could export the notebooks using the
 [utility in sphinx-gallery](https://sphinx-gallery.github.io/stable/utils.html#convert-python-scripts-into-jupyter-notebooks)
 and run the notebooks through `papermill`.
+This would allow us to add some small `asert` statements, in order
+to ensure that we don't have silent failures (as is done with
+the current notebook testing under `test/`).
 
 These new pipelines will become part of the PR Gate for `master`,
 except when we are moving from `v0.n` to `v0.n+1`.
