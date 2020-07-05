@@ -209,12 +209,12 @@ Some projects have a page showing the maintainers as well:
 
 ## Required steps
 
-1. [Done] Get GitHub Pages page/repository up and running
-1. [Done] Set up CI to deploy current documentation there automatically
-1. [Done] Set up CI to make documentation changes viewable, i.e. the generated
+1. Get GitHub Pages page/repository up and running
+1. Set up CI to deploy current documentation there automatically
+1. Set up CI to make documentation changes viewable, i.e. the generated
    HTML pages need to be visible (CircleCI)
-1. [Done] Establish webpage section as outlined above (Quickstart, User guide, etc.)
-1. [In Progress] Convert existing content, including reformatting markdown as
+1. Establish webpage section as outlined above (Quickstart, User guide, etc.)
+1. Convert existing content, including reformatting markdown as
    ReST.
     - We already have the examples gallery thanks to Adrin's work on
       `sphinx-gallery`. There will be plenty of work to convert existing
@@ -224,22 +224,19 @@ Some projects have a page showing the maintainers as well:
       Jupyter plugin for `sphinx`.
     - Related: Document notebook development process (see separate section
       below)
-1. [In Progress] Write remaining content for all of them.
-1. [In Progress] We need to find a way to present the dashboard in a website
+1. Write remaining content for all of them.
+1. We need to find a way to present the dashboard in a website
    where it can't be interactive. Perhaps with screenshots for the user
    guides, but the example notebooks are downloadable as Jupyter notebooks.
    [Could we perhaps pre-calculate all metrics and show the interactive
    dashboard in the example notebooks? There may be a sphinx extension for
    typescript]
-1. [Done] integrate landing page (will be provided by a designer), everything
+1. integrate landing page (will be provided by a designer), everything
    else from the Fairlearn project repositories
-1. [Done] add style template from pandas
-1. [Currently using fairlearn.github.io] deploy through fairlearn.org
-    - check that all pages are reachable through fairlearn.org
-    - https for fairlearn.org (currently only http works)
-    - [Done] remove API doc from readthedocs
-1. [Done] ensure the navigation from homepage to the other sections works
-    - [Done] manual testing
+1. add style template from pandas
+1. remove API doc from readthedocs
+1. ensure the navigation from homepage to the other sections works
+    - manual testing
 1. automated testing of navigation/broken links
 1. Add an example notebook to show how to use estimators from various packages
    with our mitigation techniques.
@@ -274,7 +271,11 @@ Specifically, we need to document how one can
 Document exactly which tools/plugins we recommend, e.g. VSCode extensions
 or Jupytext, etc.
 
-## Outstanding questions
+## Outstanding questions / tasks
+
+Documentation infrastructure related tasks should be tracked through the
+corresponding [GitHub project](https://github.com/fairlearn/fairlearn/projects/6)
+in the Fairlearn repository.
 
 1. Do we want users to cite us in any way? See
    [this example](https://scikit-learn.org/dev/about.html#citing-scikit-learn).
@@ -293,3 +294,6 @@ or Jupytext, etc.
    with the content? Given that this project's goal is to be about more than
    just code, we should have mechanisms to understand whether our educational
    material is actually useful (and used). Any suggestions?
+1. [Currently using fairlearn.github.io] deploy through fairlearn.org
+    - check that all pages are reachable through fairlearn.org
+    - https for fairlearn.org (currently only http works)
