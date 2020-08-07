@@ -26,3 +26,6 @@ This is not compatible with the way `sphinx-multiversion` works.
 We should onboard to using `sphinx-multiversion` going forwards.
 However, if we want `v0.4.6` documentation, that will have to be a special case.
 It should be relative straightforward to add it to the `fairlearn.github.io` repository manually, once `sphinx-multiversion` has taken over main documentation build.
+
+Aside from the `v0.4.6` issue, the risk in this approach is that each version will build all the examples.
+That could take us over the time limit for the CircleCI free tier.
