@@ -20,3 +20,9 @@ The `sphinx-multiversion` tool has more recent updates, and the author has been 
 Some of these have resulted from Windows, and the author has issued patches for them.
 Unfortunately, there is a more fundamental issue: we have substantially changed the `examples/` directory, and this means that the latest `conf.py` does not work with `v0.4.6`.
 This is not compatible with the way `sphinx-multiversion` works.
+
+## Proposal
+
+We should onboard to using `sphinx-multiversion` going forwards.
+However, if we want `v0.4.6` documentation, that will have to be a special case.
+It should be relative straightforward to add it to the `fairlearn.github.io` repository manually, once `sphinx-multiversion` has taken over main documentation build.
