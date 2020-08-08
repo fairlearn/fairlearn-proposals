@@ -1,5 +1,5 @@
-Proposal to migrate the existing UI
-===================================
+Proposal to move the existing UI code to a separate repo
+========================================================
 
 Current situation
 -----------------
@@ -38,3 +38,6 @@ To address the concerns outlined above we propose to
 
 In general, this opens up Fairlearn to be the "core" library around which
 anyone can build any type of UI that they find useful.
+Additionally, the new UI repository will be open source and accept
+contributions as long as they comply with the somewhat stricter requirements
+due to the cloud integration.
