@@ -1,16 +1,13 @@
-Proposal to move the existing UI code to a separate repo
-========================================================
+# Proposal to move the existing UI code to a separate repo
 
-Current situation
------------------
+## Current situation
 
 The existing UI in the `visualization` directory is published to `npm` as
 `fairlearn-dashboard` and consumed in the `fairlearn.widget` module.
 Users can view the Fairlearn dashboard through Python code in a Jupyter
 notebook.
 
-Problems
--------
+## Problems
 
 1. The current setup with both Python and Typescript code in the same
    repository has lead to confusion for developers who assumed that changes
@@ -33,8 +30,7 @@ Problems
    would allow us to think of appropriate visualizations per example notebook
    as opposed to providing a general purpose dashboard with the package.
 
-Proposal
---------
+## Proposal
 
 To address the concerns outlined above we propose to
 
