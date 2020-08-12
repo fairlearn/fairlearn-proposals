@@ -42,11 +42,13 @@ To address the concerns outlined above we propose to
 2. Remove the `fairlearn.widget` module from the `fairlearn` package.
 3. Move these pieces into a public repository under the `microsoft`
    organization on GitHub (with MIT license as before).
-4. Publish a `fairlearn-dashboard` package from the repo in the `microsoft`
-   organization that can be installed separately if desired.
+   This is to better signal that the package needs to abide by somewhat
+   stricter Microsoft cloud integration requirements.
+4. Publish a package (Name TBD) from the repo in the `microsoft` organization
+   that can be installed separately if desired.
 
 In general, this opens up Fairlearn to be the "core" library around which
 anyone can build any type of UI that they find useful.
 Additionally, the new UI repository will be open source and accept
-contributions as long as they comply with the somewhat stricter requirements
-due to the cloud integration.
+contributions as long as they comply with the somewhat stricter Microsoft
+cloud integration requirements.
