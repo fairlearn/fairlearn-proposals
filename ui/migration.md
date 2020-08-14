@@ -71,7 +71,7 @@ everyone so that we can move towards the common goal of building a user
 experience according to user needs.
 
 In the charts below the left side is the Fairlearn repository as we have it
-today with Python modules, website, and notebooks. The only change is that the
+before this proposal takes effect with Python modules, website, and notebooks. The only change is that the
 existing visualizations (and the corresponding `widget` module) are moved to
 a repo under the `microsoft` GitHub organization. Separate from these parts
 the bottom right of the charts can be structured in different ways:
