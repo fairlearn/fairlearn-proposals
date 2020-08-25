@@ -234,3 +234,26 @@ High            Male    0.5
 
 ## Multiple Metrics
 
+Finally, we can also allow for the evaluation of multiple metrics at once.
+
+### Existing Syntax
+
+This is not supported.
+Users would have to devise their own method
+
+### Proposed Change
+
+We allow a list of metric functions in the call to group summary.
+Results become DataFrames, with one column for each metric:
+```python
+>>> result = group_summary([skm.accuracy_score, skm.precision_score], y_true, y_pred, sensitive_features=A_sex)
+>>> result.overall
+      sklearn.metrics.accuracy_score  sklearn.metrics.precision_score
+   0                             0.3                              0.5
+>>> result.by_groups
+      sklearn.metrics.accuracy_score  sklearn.metrics.precision_score
+'Female'                        0.4                            0.7
+```
+This should generalise to the other methods described above.
+
+One open question is how extra arguments should be passed to the individual metric functions, including how to handle the `indexed_params=`.
