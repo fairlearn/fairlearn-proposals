@@ -253,6 +253,7 @@ Results become DataFrames, with one column for each metric:
 >>> result.by_groups
       sklearn.metrics.accuracy_score  sklearn.metrics.precision_score
 'Female'                        0.4                            0.7
+'Male'                          0.6                            0.75
 ```
 This should generalise to the other methods described above.
 
