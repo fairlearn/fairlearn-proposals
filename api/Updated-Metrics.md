@@ -53,19 +53,49 @@ We do not intend to change the API invoked by the user.
 What will change is the return type.
 Rather than a `Bunch`, we will return a `GroupedMetric` object, which can offer richer functionality.
 
-At this basic level, there is only a slight change to the results seen by the user. There are still properties `overall` and `by_groups`, with the same semantics.
-However, the `by_groups` result is now a Pandas Series:
+At this basic level, there is only a slight change to the results seen by the user.
+There are still properties `overall` and `by_groups`, with the same semantics.
+However, the `by_groups` result is now a Pandas Series, and we also provide a `metric` property to record the name of the underlying metric:
 ```python
 >>> result = flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_sex)
+>>> result.metric
+"sklearn.metrics.accuracy_score"
 >>> result.overall
 0.4
 >>> result.by_groups
 Male      0.6536
 Female    0.2130
-dtype: float64
+Name: sklearn.metrics.accuracy_score dtype: float64
 >>> print(type(result.by_groups))
 <class 'pandas.core.series.Series'>
 ```
 We would continue to provide convenience wrappers such as `accuracy_score_group_summary` for users, and support passing through arguments along with `indexed_params`.
 There is little advantage to the change at this point.
 This will change in the next section.
+
+## Obtaining Scalars
+
+### Existing Syntax
+
+We provide methods for turning the `Bunch`es returned from `group_summary()` into scalars:
+```python
+>>> difference_from_summary(result)
+0.4406
+>>> ratio_from_summary(result)
+0.3259
+>>> group_max_from_summary(result)
+0.6536
+>>> group_min_from_summary(result)
+0.2130
+```
+We also provide wrappers such as `accuracy_score_difference()`, `accuracy_score_ratio()` and `accuracy_score_min()` for user convenience.
+
+One
+
+## Multiple Sensitive Features
+
+## Conditional (or Segemented) Metrics
+
+For our purposes, Conditional Metrics (alternatively known as Segmented Metrics) do not return single
+
+## Multiple Metrics
