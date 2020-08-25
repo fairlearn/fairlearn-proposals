@@ -90,7 +90,42 @@ We provide methods for turning the `Bunch`es returned from `group_summary()` int
 ```
 We also provide wrappers such as `accuracy_score_difference()`, `accuracy_score_ratio()` and `accuracy_score_min()` for user convenience.
 
-One
+One point which these helpers lack (although it could be added) is the ability to select alternative values for measuring the difference and ratio.
+For example, the user might not be interested in the difference between the maximum and minimum, but the difference from the overall value.
+Or perhaps the difference from a particular group.
+
+### Proposed Change
+
+The `GroupedMetric` object would have methods for calculating the required scalars.
+First, let us consider the differences.
+
+We would provide operations to calculate differences in various ways (all of these results are a Pandas Series):
+```python
+>>> result.differences()
+Male      0.0
+Female    0.4406
+Name: TBD dtype: float64
+>>> result.differences(relative_to=min)
+Male     -0.4406
+Female    0.0
+Name: TBD dtype: float64
+>>> result.differences(relative_to=min, abs=True)
+Male      0.4406
+Female    0.0
+Name: TBD dtype: float64
+>>> result.differences(relative_to=overall)
+Male     -0.2436
+Female    0.1870
+Name: TBD dtype: float64
+>>> result.differences(relative_to=overall, abs=True)
+Male      0.2436
+Female    0.1870
+Name: TBD dtype: float64
+>>> result.differences(relative_to=group, group='Female', abs=True)
+Male      0.4406
+Female    0.0
+Name: TBD dtype: float64
+```
 
 ## Multiple Sensitive Features
 
