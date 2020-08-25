@@ -105,32 +105,132 @@ We would provide operations to calculate differences in various ways (all of the
 Male      0.0
 Female    0.4406
 Name: TBD dtype: float64
->>> result.differences(relative_to=min)
+>>> result.differences(relative_to='min')
 Male     -0.4406
 Female    0.0
 Name: TBD dtype: float64
->>> result.differences(relative_to=min, abs=True)
+>>> result.differences(relative_to='min', abs=True)
 Male      0.4406
 Female    0.0
 Name: TBD dtype: float64
->>> result.differences(relative_to=overall)
+>>> result.differences(relative_to='overall')
 Male     -0.2436
 Female    0.1870
 Name: TBD dtype: float64
->>> result.differences(relative_to=overall, abs=True)
+>>> result.differences(relative_to='overall', abs=True)
 Male      0.2436
 Female    0.1870
 Name: TBD dtype: float64
->>> result.differences(relative_to=group, group='Female', abs=True)
+>>> result.differences(relative_to='group', group='Female', abs=True)
 Male      0.4406
 Female    0.0
 Name: TBD dtype: float64
 ```
+The arguments introduced so far for the `differences()` method:
+- `relative_to=` to decide the common point for the differences. Possible values are `'max'` (the default), `'min'`, `'overall'` and `'group'`
+- `group=` to select a group name, only when `relative_to` is set to `'group'`. Default is `None`
+- `abs` to indicate whether to take the absolute value of each entry (defaults to false)
 
-## Multiple Sensitive Features
+The user could then use the Pandas methods `max()` and `min()` to reduce these Series objects to scalars.
+However, this will run into issues where the `relative_to` argument ends up pointing to either the maximum or minimum group, which will have a difference of zero.
+That could then be the maximum or minimum value of the set of difference, but probably won't be what the user wants.
 
-## Conditional (or Segemented) Metrics
+To address this case, we should add an extra argument `aggregate` to the `differences()` method:
+```python
+>>> result.differences(aggregate='max')
+0.4406
+>>> result.differences(relative_to='overall', aggregate='max')
+0.1870
+>>> result.differences(relative_to='overall', abs=True, aggregate='max')
+0.2436
+```
 
-For our purposes, Conditional Metrics (alternatively known as Segmented Metrics) do not return single
+There would be a similar method called `ratios()` on the `GroupedMetric` object:
+```python
+>>> result.ratios()
+Male      1.0
+Female    0.3259
+Name: TBD dtype: float64
+```
+The `ratios()` method will take the following arguments:
+- `relative_to=` similar to `differences()`
+- `group=` similar to `differences()`
+- `ratio_order=` determines how to build the ratio. Values are
+   - `sub_unity` to make larger value the denominator
+   - `super_unity` to make larger value the numerator
+   - `from_relative` to make the value specified by `relative_to=` the denominator
+   - `to_relative` to make the value specified by `relative_to=` the numerator
+- `aggregate=` similar to `differences()`
+
+## Intersections of Sensitive Features
+
+### Existing Syntax
+
+Our current API does not support evaluating metrics on intersections of sensitive features (e.g. "black and female", "black and male", "white and female", "white and male").
+To achieve this, users currently need to write something along the lines of:
+```python
+>>> A_combined = A['Sex'] + '-' + A['Race']
+
+>>> accuracy_score_group_summary(y_true, y_pred, sensitive_features=A_combined)
+{ 'overall': 0.4, by_groups : { 'Female-Black':0.4, 'Female-Hispanic':0.5, 'Female-White':0.5, 'Male-Black':0.5, 'Male-Hispanic': 0.6, 'Male-White':0.7 } }
+```
+This is unecessarily cumbersome.
+It is also possible that some combinations might not appear in the data (especially as more sensitive features are combined), but identifying which ones were missing would be tedious.
+
+
+### Proposed Change
+
+If `sensitive_features=` is a DataFrame, we can generate our results in terms of a MultiIndex:
+```python
+>>> result = group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A)
+>>> result.by_groups
+Sex     Race
+Male    Black       0.5
+        White       0.7
+        Hispanic    0.6
+Female  Black       0.4
+        White       0.5
+        Hispanic    0.5
+Name: sklearn.metrics.accuracy_score, dtype: float64
+```
+If a particular combination of sensitive features had no representatives, then we would return `None` for that entry in the Series.
+
+The `differences()` and `ratio()` methods would act on this Series as before.
+
+## Segmented (or Conditional) Metrics
+
+For our purposes, Segmented Metrics (alternatively known as Conditional Metrics) do not return single values when aggregation is requested in a call to `differences()` or `ratios()` but instead provide one result for each unique value of the specified segmentation feature(s).
+
+### Existing Syntax
+
+Not supported.
+Users would have to devise the required code themselves
+
+### Proposed Change
+
+We propose adding an extra argument to `differences()` and `ratios()`, to provide a `segment_by=` argument.
+
+Suppose we have a DataFrame, `A_3` with three sensitive features: Sex, Race and Income Band (the latter having values 'Low' and 'High').
+This could represent a loan scenario where discrimination based on income is allowed, but within the income bands, other sensitive groups must be treated equally.
+When `differences()` is invoked with `segment_by=`, the result will not be a scalar, but a Series.
+A user might make calls:
+```python
+>>> result = accuracy_score_group_summary(y_true, y_test, sensitive_features=A_3)
+>>> result.differences(aggregate=min, segment_by='Income Band')
+Income Band
+Low                 0.3
+High                0.4
+Name: TBD, dtype: float64
+```
+We can also allow `segment_by=` to be a list of names:
+```python
+>>> result.differences(aggregate=min, segment_by=['Income Band', 'Sex'])
+Income Band     Sex
+Low             Female  0.3
+Low             Male    0.35
+High            Female  0.4
+High            Male    0.5
+```
 
 ## Multiple Metrics
+
