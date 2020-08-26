@@ -69,6 +69,20 @@ Name: sklearn.metrics.accuracy_score dtype: float64
 >>> print(type(result.by_groups))
 <class 'pandas.core.series.Series'>
 ```
+The `metric` property (and using it as the name of the Series) could prove troublesome.
+This is because the fully qualified function name, as reconstructed from `__name__`, `__qualname` and `__module__` might not match the user's expectation.
+For example:
+```python
+>>> import sklearn.metrics as skm
+>>> skm.accuracy_score.__name__
+'accuracy_score'
+>>> skm.accuracy_score.__qualname__
+'accuracy_score'
+>>> skm.accuracy_score.__module__
+'sklearn.metrics._classification'
+```
+We are seeing some of the actual internal structure here of SciKit-Learn, and the user might not be expecting that.
+
 We would continue to provide convenience wrappers such as `accuracy_score_group_summary` for users, and support passing through arguments along with `indexed_params`.
 There is little advantage to the change at this point.
 This will change in the next section.
@@ -258,3 +272,22 @@ Results become DataFrames, with one column for each metric:
 This should generalise to the other methods described above.
 
 One open question is how extra arguments should be passed to the individual metric functions, including how to handle the `indexed_params=`.
+On possible solution is to have lists, with indices corresponding to the list of functions supplied to `group_summary()`
+For example, for `index_params=` we would have:
+```python
+indexed_params = [['sample_weight'], ['sample_weight']]
+```
+In the `**kwargs` a single `extra_args=` argument would be accepted (although not required), which would contain the individual `**kwargs` for each metric:
+```python
+extra_args = [ 
+    {
+        'sample_weight': [1,2,1,1,3, ...],
+        'normalize': False
+    },
+    {
+        'sample_weight': [1,2,1,1,3, ... ],
+        'pos_label' = 'Granted'
+    }
+]
+```
+If users had a lot of functions with a lot of custom arguments, this could get error-prone and difficult to debug.
