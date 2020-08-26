@@ -297,3 +297,50 @@ extra_args = [
 ]
 ```
 If users had a lot of functions with a lot of custom arguments, this could get error-prone and difficult to debug.
+
+## User Conveniences
+
+We can consider allowing the metric function given to `group_summary()` to be represented by a string.
+We would provide a mapping of strings to suitable functions.
+This would make the following all equivalent:
+```python
+>>> r1 = group_summary(sklearn.accuracy_score, y_true, y_pred, sensitive_features=A_sex)
+>>> r2 = group_summary('accuracy_score', y_true, y_pred, sensitive_features=A_sex)
+>>> r3 = accuracy_score_group_summary( y_true, y_pred, sensitive_features=A_sex)
+```
+We would also allow mixtures of strings and functions in the multiple metric case.
+
+## Generality
+
+Throughout this document, we have been describing the case of classification metrics.
+However, we do not actually require this.
+It is the underlying metric function which gives meaning to the `y_true` and `y_pred` lists.
+So long as these are of equal length (and equal in length to the sensitive feature list - which _will_ be treated as a categorical), then `group_summary()` does not actually care about their datatypes.
+For example, each entry in `y_pred` could be a dictionary of predicted classes and accompanying probabilities.
+Or the user might be working on a regression problem, and both `y_true` and `y_pred` would be floating point numbers (or `y_pred` might even be a tuple of predicted value and error).
+So long as the underlying metric understands the datastructures, `group_summary()` will not care.
+
+There will be an effect on the `GroupedMetric` result object.
+Although the `overall` and `by_groups` properties will work fine, the `differences()` and `ratios()` methods may not.
+After all, what does "take the ratio of two confusion matrices" even mean?
+We should try to trap these cases, and throw a meaningful exception (rather than propagating whatever exception happens to emerge from the underlying libraries).
+Since we know that `differences()` and `ratios()` will only work when the metric has produced scalar results, this should be a straightforward test.
+
+## Pitfalls
+
+There are some potential pitfalls which could trap the unwary.
+
+The biggest of these are related to missing classes in the subgroups.
+To take an extreme case, suppose that males were always being predicted classes A or B, while females were always predicted classes C or D.
+The user could request precision scores, but the results would not really be comparable between the two groups.
+With intersections of sensitive features, cases like this become more likely.
+
+Metrics in SciKit-Learn usually have arguments such as `pos_label=` and `labels=` to allow the user to specify the expected labels, and adjust their behaviour accordingly.
+However, we do not require that users stick to the metrics defined in SciKit-Learn.
+
+If we implement the convenience strings-for-functions piece mentioned above, then _when the user specifies one of those strings_ we can log warnings if the appropriate arguments (such as `labels=`) are not specified.
+We could even generate the argument ourselves if the user does not specify it.
+However, this risks tying Fairlearn to particular versions of SciKit-Learn.
+
+Unfortunately, the generality of `group_summary()` means that we cannot solve this for the user.
+It cannot even tell if it is evaluating a classification or regression problem.
