@@ -149,7 +149,7 @@ The user could then use the Pandas methods `max()` and `min()` to reduce these S
 However, this will run into issues where the `relative_to` argument ends up pointing to either the maximum or minimum group, which will have a difference of zero.
 That could then be the maximum or minimum value of the set of difference, but probably won't be what the user wants.
 
-To address this case, we should add an extra argument `aggregate` to the `differences()` method:
+To address this case, we should add an extra argument `aggregate=` to the `differences()` method:
 ```python
 >>> result.differences(aggregate='max')
 0.4406
@@ -158,6 +158,7 @@ To address this case, we should add an extra argument `aggregate` to the `differ
 >>> result.differences(relative_to='overall', abs=True, aggregate='max')
 0.2436
 ```
+If `aggregate=None` (which would be the default), then the result is a Series, as shown above.
 
 There would be a similar method called `ratios()` on the `GroupedMetric` object:
 ```python
@@ -176,6 +177,11 @@ The `ratios()` method will take the following arguments:
    - `to_relative` to make the value specified by `relative_to=` the numerator
 - `aggregate=` similar to `differences()`
 
+We would also provide the same wrappers such as `accuracy_score_difference()` but expose the extra arguments discussed here.
+One question is whether the default aggregation should be `None` (to match the method), or whether it should default to scalar results similar to the existing methods. 
+
+In the section on Segmented Metrics below, we shall discuss one extra optional argument for `differences()` and `ratios()`.
+
 ## Intersections of Sensitive Features
 
 ### Existing Syntax
@@ -189,12 +195,12 @@ To achieve this, users currently need to write something along the lines of:
 { 'overall': 0.4, by_groups : { 'Female-Black':0.4, 'Female-Hispanic':0.5, 'Female-White':0.5, 'Male-Black':0.5, 'Male-Hispanic': 0.6, 'Male-White':0.7 } }
 ```
 This is unecessarily cumbersome.
-It is also possible that some combinations might not appear in the data (especially as more sensitive features are combined), but identifying which ones were missing would be tedious.
+It is also possible that some combinations might not appear in the data (especially as more sensitive features are combined), but identifying which ones were not represented in the dataset would be tedious.
 
 
 ### Proposed Change
 
-If `sensitive_features=` is a DataFrame, we can generate our results in terms of a MultiIndex:
+If `sensitive_features=` is a DataFrame (or list of Series.... exact supported types are TBD), we can generate our results in terms of a MultiIndex. Using the `A` DataFrame defined above, a user might write:
 ```python
 >>> result = group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A)
 >>> result.by_groups
