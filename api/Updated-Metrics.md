@@ -180,7 +180,7 @@ The `ratios()` method will take the following arguments:
 We would also provide the same wrappers such as `accuracy_score_difference()` but expose the extra arguments discussed here.
 One question is whether the default aggregation should be `None` (to match the method), or whether it should default to scalar results similar to the existing methods. 
 
-In the section on Segmented Metrics below, we shall discuss one extra optional argument for `differences()` and `ratios()`.
+In the section on Conditional Metrics below, we shall discuss one extra optional argument for `differences()` and `ratios()`.
 
 ## Intersections of Sensitive Features
 
@@ -217,9 +217,9 @@ If a particular combination of sensitive features had no representatives, then w
 
 The `differences()` and `ratio()` methods would act on this Series as before.
 
-## Segmented (or Conditional) Metrics
+## Conditional (or Segmented) Metrics
 
-For our purposes, Segmented Metrics (alternatively known as Conditional Metrics) do not return single values when aggregation is requested in a call to `differences()` or `ratios()` but instead provide one result for each unique value of the specified segmentation feature(s).
+For our purposes, Conditional Metrics (alternatively known as Segmented Metrics) do not return single values when aggregation is requested in a call to `differences()` or `ratios()` but instead provide one result for each unique value of the specified condition feature(s).
 
 ### Existing Syntax
 
@@ -228,23 +228,23 @@ Users would have to devise the required code themselves
 
 ### Proposed Change
 
-We propose adding an extra argument to `differences()` and `ratios()`, to provide a `segment_by=` argument.
+We propose adding an extra argument to `differences()` and `ratios()`, to provide a `condition_on=` argument.
 
 Suppose we have a DataFrame, `A_3` with three sensitive features: Sex, Race and Income Band (the latter having values 'Low' and 'High').
 This could represent a loan scenario where discrimination based on income is allowed, but within the income bands, other sensitive groups must be treated equally.
-When `differences()` is invoked with `segment_by=`, the result will not be a scalar, but a Series.
+When `differences()` is invoked with `condition_on=`, the result will not be a scalar, but a Series.
 A user might make calls:
 ```python
 >>> result = accuracy_score_group_summary(y_true, y_test, sensitive_features=A_3)
->>> result.differences(aggregate=min, segment_by='Income Band')
+>>> result.differences(aggregate=min, condition_on='Income Band')
 Income Band
 Low                 0.3
 High                0.4
 Name: TBD, dtype: float64
 ```
-We can also allow `segment_by=` to be a list of names:
+We can also allow `condition_on=` to be a list of names:
 ```python
->>> result.differences(aggregate=min, segment_by=['Income Band', 'Sex'])
+>>> result.differences(aggregate=min, condition_on=['Income Band', 'Sex'])
 Income Band     Sex
 Low             Female  0.3
 Low             Male    0.35
