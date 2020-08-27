@@ -344,3 +344,25 @@ However, this risks tying Fairlearn to particular versions of SciKit-Learn.
 
 Unfortunately, the generality of `group_summary()` means that we cannot solve this for the user.
 It cannot even tell if it is evaluating a classification or regression problem.
+
+## The Wrapper Functions
+
+In the above, we have assumed that we will provide both `group_summary()` and wrappers such as `accuracy_score_group_summary()`, `accuracy_score_difference()`, `accuracy_score_ratio()` and `accuracys_score_group_min()`. Do these wrappers add value, or do they end up just polluting our namespace and confusing users?
+
+The wrappers such as `demographic_parity_difference()` and `equalized_odds_difference()` are arguably useful, since they are specific metrics used in the literature (although even then we might want to add the extra `relative_to=` and `group=` arguments).
+The case for `accuracy_score_group_summary()` and related functions is less clear.
+
+## Methods or Functions
+
+Since the `GroupMetric` object contains no private members, it is not clear that it needs to be its own oject.
+We could continue to use a `Bunch` but make the `group_by` entry/property return a Pandas Series (which would embed all the other information we might need).
+In the multiple metric case, we would still return a single `Bunch` but the properties would both be DataFrames.
+
+The question is whether users prefer:
+```python
+>>> diff = group_summary(skm.recall_score, y_true, y_pred, sensitive_features=A).difference(aggregate='max')
+```
+or
+```python
+>>> diff = difference(group_summary(skm.recall_score, y_true, y_pred, sensitive_features=A), aggregate='max')
+```
