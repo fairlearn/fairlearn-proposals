@@ -43,7 +43,7 @@ We allow for sample weights (and other arguments which require slicing) via `ind
 
 We also provide some wrappers for common metrics from SciKit-Learn:
 ```python
->>> flm.accuracy_score_group_summary(y_true, y_pred, sensitive_features=A_sex)
+>>> flm.accuracy_score_group_summary(y_true, y_pred, sensitive_features=A_1)
 {'overall': 0.4, 'by_group': {'B': 0.6536, 'C': 0.213}}
 ```
 
@@ -230,7 +230,7 @@ Users would have to devise the required code themselves
 
 We propose adding an extra argument to `differences()` and `ratios()`, to provide a `condition_on=` argument.
 
-Suppose we have a DataFrame, `A_3` with three sensitive features: Sex, Race and Income Band (the latter having values 'Low' and 'High').
+Suppose we have a DataFrame, `A_3` with three sensitive features: SF 1, SF 2 and Income Band (the latter having values 'Low' and 'High').
 This could represent a loan scenario where discrimination based on income is allowed, but within the income bands, other sensitive groups must be treated equally.
 When `differences()` is invoked with `condition_on=`, the result will not be a scalar, but a Series.
 A user might make calls:
@@ -304,9 +304,9 @@ We can consider allowing the metric function given to `group_summary()` to be re
 We would provide a mapping of strings to suitable functions.
 This would make the following all equivalent:
 ```python
->>> r1 = group_summary(sklearn.accuracy_score, y_true, y_pred, sensitive_features=A_sex)
->>> r2 = group_summary('accuracy_score', y_true, y_pred, sensitive_features=A_sex)
->>> r3 = accuracy_score_group_summary( y_true, y_pred, sensitive_features=A_sex)
+>>> r1 = group_summary(sklearn.accuracy_score, y_true, y_pred, sensitive_features=A_1)
+>>> r2 = group_summary('accuracy_score', y_true, y_pred, sensitive_features=A_1)
+>>> r3 = accuracy_score_group_summary( y_true, y_pred, sensitive_features=A_1)
 ```
 We would also allow mixtures of strings and functions in the multiple metric case.
 
@@ -331,7 +331,7 @@ Since we know that `differences()` and `ratios()` will only work when the metric
 There are some potential pitfalls which could trap the unwary.
 
 The biggest of these are related to missing classes in the subgroups.
-To take an extreme case, suppose that males were always being predicted classes A or B, while females were always predicted classes C or D.
+To take an extreme case, suppose that the `B` group speciified by `SF 1` were always being predicted classes H or J, while the `C` group was always predicted classes K or L.
 The user could request precision scores, but the results would not really be comparable between the two groups.
 With intersections of sensitive features, cases like this become more likely.
 
