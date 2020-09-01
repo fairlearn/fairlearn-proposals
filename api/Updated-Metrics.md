@@ -281,7 +281,7 @@ Results become DataFrames, with one column for each metric:
 This should generalise to the other methods described above.
 
 One open question is how extra arguments should be passed to the individual metric functions, including how to handle the `indexed_params=`.
-Onek possible solution is to have lists, with indices corresponding to the list of functions supplied to `group_summary()`
+A possible solution is to have lists, with indices corresponding to the list of functions supplied to `group_summary()`
 For example, for `index_params=` we would have:
 ```python
 indexed_params = [['sample_weight'], ['sample_weight']]
