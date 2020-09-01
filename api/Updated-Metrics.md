@@ -8,16 +8,16 @@ In the following we assume that we have variables of the following form defined:
 
 ```python
 y_true = [0, 1, 0, 0, 1, 1, ...]
-y_pred = [1, 0, 0, 1, 0, 1, ...]
-A_sex = [ 'male', 'female', 'female', 'male', ...]
-A_race = [ 'black', 'white', 'hispanic', 'black', ...]
-A = pd.DataFrame(np.transpose([A_sex, A_race]), columns=['Sex', 'Race'])
+y_pred = [1, 0, 0, 1, 0, 1, ...] # Content can be different for other metrics (see below)
+A_1 = [ 'C', 'B', 'B', 'C', ...]
+A_2 = [ 'M', 'N', 'N', 'P', ...]
+A = pd.DataFrame(np.transpose([A_1, A_2]), columns=['SF 1', 'SF 2'])
 
 weights = [ 1, 2, 3, 2, 2, 1, ...]
 ```
 
-We actually seek to be very agnostic as to the contents of the `y_true` and `y_pred` arrays.
-Meaning is imposed on them by the underlying metrics.
+We actually seek to be very agnostic as to the contents of the `y_true` and `y_pred` arrays; the meaning is imposed on them by the underlying metrics.
+Here we have shown binary values for a simple classification problem, but they could be floating point values from a regression, or even collections of classes and associated probabilities.
 
 ## Basic Calls
 
@@ -26,9 +26,9 @@ Meaning is imposed on them by the underlying metrics.
 Our basic method is `group_summary()`
 
 ```python
->>> result = flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_sex)
+>>> result = flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1)
 >>> print(result)
-{'overall': 0.4, 'by_group': {'male': 0.6536, 'female': 0.213}}
+{'overall': 0.4, 'by_group': {'B': 0.6536, 'C': 0.213}}
 >>> print(type(result))
 <class 'sklearn.utils.Bunch'>
 ```
@@ -37,14 +37,14 @@ Note that the `by_group` key accesses another `Bunch`.
 
 We allow for sample weights (and other arguments which require slicing) via `indexed_params`, and passing through other arguments to the underlying metric function (in this case, `normalize`):
 ```python
->>> flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_sex, indexed_params=['sample_weight'], sample_weight=weights, normalize=False)
-{'overall': 20, 'by_group': {'male': 60, 'female': 21}}
+>>> flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1, indexed_params=['sample_weight'], sample_weight=weights, normalize=False)
+{'overall': 20, 'by_group': {'B': 60, 'C': 21}}
 ```
 
 We also provide some wrappers for common metrics from SciKit-Learn:
 ```python
 >>> flm.accuracy_score_group_summary(y_true, y_pred, sensitive_features=A_sex)
-{'overall': 0.4, 'by_group': {'male': 0.6536, 'female': 0.213}}
+{'overall': 0.4, 'by_group': {'B': 0.6536, 'C': 0.213}}
 ```
 
 ### Proposed Change
@@ -57,14 +57,14 @@ At this basic level, there is only a slight change to the results seen by the us
 There are still properties `overall` and `by_groups`, with the same semantics.
 However, the `by_groups` result is now a Pandas Series, and we also provide a `metric` property to record the name of the underlying metric:
 ```python
->>> result = flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_sex)
+>>> result = flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1)
 >>> result.metric
 "sklearn.metrics.accuracy_score"
 >>> result.overall
 0.4
 >>> result.by_groups
-Male      0.6536
-Female    0.2130
+B      0.6536
+C      0.2130
 Name: sklearn.metrics.accuracy_score dtype: float64
 >>> print(type(result.by_groups))
 <class 'pandas.core.series.Series'>
@@ -116,28 +116,28 @@ First, let us consider the differences.
 We would provide operations to calculate differences in various ways (all of these results are a Pandas Series):
 ```python
 >>> result.differences()
-Male      0.0
-Female    0.4406
+B      0.0
+C      0.4406
 Name: TBD dtype: float64
 >>> result.differences(relative_to='min')
-Male     -0.4406
-Female    0.0
+B     -0.4406
+C      0.0
 Name: TBD dtype: float64
 >>> result.differences(relative_to='min', abs=True)
-Male      0.4406
-Female    0.0
+B      0.4406
+C      0.0
 Name: TBD dtype: float64
 >>> result.differences(relative_to='overall')
-Male     -0.2436
-Female    0.1870
+B     -0.2436
+C      0.1870
 Name: TBD dtype: float64
 >>> result.differences(relative_to='overall', abs=True)
-Male      0.2436
-Female    0.1870
+B      0.2436
+C      0.1870
 Name: TBD dtype: float64
->>> result.differences(relative_to='group', group='Female', abs=True)
-Male      0.4406
-Female    0.0
+>>> result.differences(relative_to='group', group='C', abs=True)
+B      0.4406
+C      0.0
 Name: TBD dtype: float64
 ```
 The arguments introduced so far for the `differences()` method:
@@ -163,8 +163,8 @@ If `aggregate=None` (which would be the default), then the result is a Series, a
 There would be a similar method called `ratios()` on the `GroupedMetric` object:
 ```python
 >>> result.ratios()
-Male      1.0
-Female    0.3259
+B      1.0
+C      0.3259
 Name: TBD dtype: float64
 ```
 The `ratios()` method will take the following arguments:
@@ -189,10 +189,10 @@ In the section on Conditional Metrics below, we shall discuss one extra optional
 Our current API does not support evaluating metrics on intersections of sensitive features (e.g. "black and female", "black and male", "white and female", "white and male").
 To achieve this, users currently need to write something along the lines of:
 ```python
->>> A_combined = A['Sex'] + '-' + A['Race']
+>>> A_combined = A['SF 1'] + '-' + A['SF 2']
 
 >>> accuracy_score_group_summary(y_true, y_pred, sensitive_features=A_combined)
-{ 'overall': 0.4, by_groups : { 'Female-Black':0.4, 'Female-Hispanic':0.5, 'Female-White':0.5, 'Male-Black':0.5, 'Male-Hispanic': 0.6, 'Male-White':0.7 } }
+{ 'overall': 0.4, by_groups : { 'B-M':0.4, 'B-N':0.5, 'B-P':0.5, 'C-M':0.5, 'C-N': 0.6, 'C-P':0.7 } }
 ```
 This is unecessarily cumbersome.
 It is also possible that some combinations might not appear in the data (especially as more sensitive features are combined), but identifying which ones were not represented in the dataset would be tedious.
@@ -204,13 +204,13 @@ If `sensitive_features=` is a DataFrame (or list of Series.... exact supported t
 ```python
 >>> result = group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A)
 >>> result.by_groups
-Sex     Race
-Male    Black       0.5
-        White       0.7
-        Hispanic    0.6
-Female  Black       0.4
-        White       0.5
-        Hispanic    0.5
+SF 1    SF 2
+B       M       0.5
+        N       0.7
+        P       0.6
+C       M       0.4
+        N       0.5
+        P       0.5
 Name: sklearn.metrics.accuracy_score, dtype: float64
 ```
 If a particular combination of sensitive features had no representatives, then we would return `None` for that entry in the Series.
