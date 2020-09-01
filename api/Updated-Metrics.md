@@ -245,7 +245,7 @@ Name: TBD, dtype: float64
 We can also allow `condition_on=` to be a list of names:
 ```python
 >>> result.differences(aggregate=min, condition_on=['Income Band', 'SF 1'])
-Income Band     Sex
+Income Band     SF 1
 Low             B       0.3
 Low             C       0.35
 High            B       0.4
