@@ -215,7 +215,7 @@ Name: sklearn.metrics.accuracy_score, dtype: float64
 ```
 If a particular combination of sensitive features had no representatives, then we would return `None` for that entry in the Series.
 
-The `differences()` and `ratio()` methods would act on this Series as before.
+The `differences()` and `ratios()` methods would act on this Series as before.
 
 ## Conditional (or Segmented) Metrics
 
@@ -231,7 +231,7 @@ Users would have to devise the required code themselves
 We propose adding an extra argument to `differences()` and `ratios()`, to provide a `condition_on=` argument.
 
 Suppose we have a DataFrame, `A_3` with three sensitive features: SF 1, SF 2 and Income Band (the latter having values 'Low' and 'High').
-This could represent a loan scenario where discrimination based on income is allowed, but within the income bands, other sensitive groups must be treated equally.
+This could represent a loan scenario where decisions can be based on income, but within the income bands, other sensitive groups must be treated equally.
 When `differences()` is invoked with `condition_on=`, the result will not be a scalar, but a Series.
 A user might make calls:
 ```python
@@ -244,13 +244,16 @@ Name: TBD, dtype: float64
 ```
 We can also allow `condition_on=` to be a list of names:
 ```python
->>> result.differences(aggregate=min, condition_on=['Income Band', 'Sex'])
+>>> result.differences(aggregate=min, condition_on=['Income Band', 'SF 1'])
 Income Band     Sex
-Low             Female  0.3
-Low             Male    0.35
-High            Female  0.4
-High            Male    0.5
+Low             B       0.3
+Low             C       0.35
+High            B       0.4
+High            C       0.5
 ```
+There may be demand for allowing the sensitive features to be supplied as a `numpy.ndarray` or even a list of `Series`.
+To support this, `condition_on=` would need to allow integers (and lists of integers) as inputs, to index the columns.
+If the user is specifying a list for `condition_on=` then we should probably be nice and detect cases where a feature is listed twice (especially if we're allowing both names and column indices).
 
 ## Multiple Metrics
 
@@ -266,19 +269,19 @@ Users would have to devise their own method
 We allow a list of metric functions in the call to group summary.
 Results become DataFrames, with one column for each metric:
 ```python
->>> result = group_summary([skm.accuracy_score, skm.precision_score], y_true, y_pred, sensitive_features=A_sex)
+>>> result = group_summary([skm.accuracy_score, skm.precision_score], y_true, y_pred, sensitive_features=A_1)
 >>> result.overall
       sklearn.metrics.accuracy_score  sklearn.metrics.precision_score
    0                             0.3                              0.5
 >>> result.by_groups
       sklearn.metrics.accuracy_score  sklearn.metrics.precision_score
-'Female'                        0.4                            0.7
-'Male'                          0.6                            0.75
+'B'                              0.4                            0.7
+'C'                              0.6                            0.75
 ```
 This should generalise to the other methods described above.
 
 One open question is how extra arguments should be passed to the individual metric functions, including how to handle the `indexed_params=`.
-On possible solution is to have lists, with indices corresponding to the list of functions supplied to `group_summary()`
+Onek possible solution is to have lists, with indices corresponding to the list of functions supplied to `group_summary()`
 For example, for `index_params=` we would have:
 ```python
 indexed_params = [['sample_weight'], ['sample_weight']]
@@ -300,7 +303,7 @@ If users had a lot of functions with a lot of custom arguments, this could get e
 
 ## User Conveniences
 
-We can consider allowing the metric function given to `group_summary()` to be represented by a string.
+In addition to having the underlying metric be passed as a function, we can consider allowing the metric function given to `group_summary()` to be represented by a string.
 We would provide a mapping of strings to suitable functions.
 This would make the following all equivalent:
 ```python
@@ -318,7 +321,7 @@ It is the underlying metric function which gives meaning to the `y_true` and `y_
 So long as these are of equal length (and equal in length to the sensitive feature list - which _will_ be treated as a categorical), then `group_summary()` does not actually care about their datatypes.
 For example, each entry in `y_pred` could be a dictionary of predicted classes and accompanying probabilities.
 Or the user might be working on a regression problem, and both `y_true` and `y_pred` would be floating point numbers (or `y_pred` might even be a tuple of predicted value and error).
-So long as the underlying metric understands the datastructures, `group_summary()` will not care.
+So long as the underlying metric understands the data structures, `group_summary()` will not care.
 
 There will be an effect on the `GroupedMetric` result object.
 Although the `overall` and `by_groups` properties will work fine, the `differences()` and `ratios()` methods may not.
@@ -354,7 +357,7 @@ The case for `accuracy_score_group_summary()` and related functions is less clea
 
 ## Methods or Functions
 
-Since the `GroupMetric` object contains no private members, it is not clear that it needs to be its own oject.
+Since the `GroupMetric` object contains no private members, it is not clear that it needs to be its own object.
 We could continue to use a `Bunch` but make the `group_by` entry/property return a Pandas Series (which would embed all the other information we might need).
 In the multiple metric case, we would still return a single `Bunch` but the properties would both be DataFrames.
 
