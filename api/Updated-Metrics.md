@@ -214,6 +214,7 @@ C       M       0.4
 Name: sklearn.metrics.accuracy_score, dtype: float64
 ```
 If a particular combination of sensitive features had no representatives, then we would return `None` for that entry in the Series.
+Although this example has passed a DataFrame in for `sensitive_features=` we should aim to support lists of Series and `numpy.ndarray` as well.
 
 The `differences()` and `ratios()` methods would act on this Series as before.
 
