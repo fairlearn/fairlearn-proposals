@@ -328,7 +328,7 @@ There will be an effect on the `GroupedMetric` result object.
 Although the `overall` and `by_groups` properties will work fine, the `differences()` and `ratios()` methods may not.
 After all, what does "take the ratio of two confusion matrices" even mean?
 We should try to trap these cases, and throw a meaningful exception (rather than propagating whatever exception happens to emerge from the underlying libraries).
-Since we know that `differences()` and `ratios()` will only work when the metric has produced scalar results, this should be a straightforward test.
+Since we know that `differences()` and `ratios()` will only work when the metric has produced scalar results, which should be a straightforward test using [`isscalar()` from Numpy](https://numpy.org/doc/stable/reference/generated/numpy.isscalar.html).
 
 ## Pitfalls
 
@@ -351,10 +351,11 @@ It cannot even tell if it is evaluating a classification or regression problem.
 
 ## The Wrapper Functions
 
-In the above, we have assumed that we will provide both `group_summary()` and wrappers such as `accuracy_score_group_summary()`, `accuracy_score_difference()`, `accuracy_score_ratio()` and `accuracys_score_group_min()`. Do these wrappers add value, or do they end up just polluting our namespace and confusing users?
+In the above, we have assumed that we will provide both `group_summary()` and wrappers such as `accuracy_score_group_summary()`, `accuracy_score_difference()`, `accuracy_score_ratio()` and `accuracy_score_group_min()`.
+These wrappers allow the metrics to be passed to SciKit-Learn subroutines such as `make_scorer()`, and they all accept arguments for both the aggregation (as described above) and the underlying metric.
 
-The wrappers such as `demographic_parity_difference()` and `equalized_odds_difference()` are arguably useful, since they are specific metrics used in the literature (although even then we might want to add the extra `relative_to=` and `group=` arguments).
-The case for `accuracy_score_group_summary()` and related functions is less clear.
+We also provide wrappers for specific fairness metrics used in the literature such `demographic_parity_difference()` and `equalized_odds_difference()` (although even then we should add the extra `relative_to=` and `group=` arguments).
+
 
 ## Methods or Functions
 
