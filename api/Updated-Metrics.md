@@ -302,6 +302,27 @@ extra_args = [
 ```
 If users had a lot of functions with a lot of custom arguments, this could get error-prone and difficult to debug.
 
+## Naming
+
+The names `group_summary()` and `GroupedMetric` are not necessarily inspired, and there may well be better alternatives.
+Changes to these would ripple throughout the module, so agreeing on these is an important first step.
+
+Some possibilities for the function:
+  - `group_summary()`
+  - `metric_by_groups()`
+  - `calculate_group_metric()`
+  - ?
+
+And for the result object:
+  - `GroupedMetric`
+  - `GroupMetricResult`
+  - `MetricByGroups`
+  - ?
+
+Other names are also up for debate.
+However, things like the wrappers `accuracy_score_group_summary()` will hinge on the names chosen above.
+Arguments such as `index_params=` and `ratio_order=` (along with the allowed values of the latter) are important, but narrower in impact.
+
 ## User Conveniences
 
 In addition to having the underlying metric be passed as a function, we can consider allowing the metric function given to `group_summary()` to be represented by a string.
