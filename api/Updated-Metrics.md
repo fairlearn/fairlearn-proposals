@@ -55,23 +55,23 @@ Rather than a `Bunch`, we will return a `GroupedMetric` object, which can offer 
 
 At this basic level, there is only a slight change to the results seen by the user.
 There are still properties `overall` and `by_groups`, with the same semantics.
-However, the `by_groups` result is now a Pandas Series, and we also provide a `metric` property to record the name of the underlying metric:
+However, the `by_groups` result is now a Pandas Series, and we also provide a `metric_` property to store a reference to the underlying metric:
 ```python
 >>> result = flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1)
->>> result.metric
-"sklearn.metrics.accuracy_score"
+>>> result.metric_
+<class 'function'>
 >>> result.overall
 0.4
 >>> result.by_groups
 B      0.6536
 C      0.2130
-Name: sklearn.metrics.accuracy_score dtype: float64
+Name: accuracy_score dtype: float64
 >>> print(type(result.by_groups))
 <class 'pandas.core.series.Series'>
 ```
-The `metric` property (and using it as the name of the Series) could prove troublesome.
-This is because the fully qualified function name, as reconstructed from `__name__`, `__qualname` and `__module__` might not match the user's expectation.
-For example:
+Constructing the name of the Series could be an issue.
+In the example above, it is the name of the underlying metric function.
+Something as short as the `__name__` could end up being ambiguous, but using the `__module__` property to disambiguate might not match the user's expectations:
 ```python
 >>> import sklearn.metrics as skm
 >>> skm.accuracy_score.__name__
