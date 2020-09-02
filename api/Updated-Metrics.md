@@ -252,7 +252,7 @@ Low             C       0.35
 High            B       0.4
 High            C       0.5
 ```
-There may be demand for allowing the sensitive features to be supplied as a `numpy.ndarray` or even a list of `Series`.
+There may be demand for allowing the sensitive features to be supplied as a `numpy.ndarray` or even a list of `Series` (similar to how the `sensitive_features=` argument may not be a DataFrame).
 To support this, `condition_on=` would need to allow integers (and lists of integers) as inputs, to index the columns.
 If the user is specifying a list for `condition_on=` then we should probably be nice and detect cases where a feature is listed twice (especially if we're allowing both names and column indices).
 
