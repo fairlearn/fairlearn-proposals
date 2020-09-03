@@ -17,3 +17,26 @@ In all cases, these packages either offer a SciKit-Learn compatible API, or ther
 
 ## Required Tests
 
+The primary goal of this testing is to show that other ML packages can be used with our mitigation algorithms.
+This does not require in-depth testing, but more a smoke test.
+The tests should verify that, with a reasonable dataset, estimators from each package (possibly only a single example estimator) can be used with our mitigation algorithms, and produce reasonable results.
+A sample test might look a lot like those in `test_exponentiatedgradient_smoke.py` but on a more realistic dataset, and with fewer combinations of constraints and error bounds.
+
+## Concerns for Testing
+
+The packages listed above could be fairly described as 'not lightweight.'
+Requiring developers to install all of them as part of the standard developer setup (i.e. listing in `requirements-dev.txt`) will introduce friction to the process.
+Furthermore I am concerned that
+  - Some of these packages might have incompatible dependencies
+  - Some might be best installed with `conda` rather than `pip`
+
+Even if there aren't incompatible dependencies, moving to requiring `conda` for development work would be a significant change from the current `pip`-only setup (even if most developers probably `pip install` into a fresh `conda` environment).
+
+## Proposed Setup
+
+
+## Examples in the user guide
+
+Adopting the proposal above would make it impossible to incorporate examples into the user guide in the way we have done to date - the separate installation of the ML packages would mean that `sphinx` would not be able to run any sample code.
+Since our goal is to demonstrate that the packages _can_ work with Fairlearn, this is not a major concern.
+We can still write up some small code samples, perhaps incorporating code directly from the tests; we just won't be able to generate the results 'live' as part of the documentation build.
