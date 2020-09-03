@@ -34,6 +34,26 @@ Even if there aren't incompatible dependencies, moving to requiring `conda` for 
 
 ## Proposed Setup
 
+Because they will have extra dependencies, these tests should not go into our current `tests/` directory.
+We instead have a new directory `othermlpackages/` at the top level and then arrange it along these lines:
+```
+othermlpackages/
+    lightgbm/
+        conda-env.yml
+        test_lightgbm_expgrad.py
+        test_lightgbm_gridsearch.py
+    pytorch
+        conda-env.yml
+        test_pytorch_expgrad.py
+        test_pytorch_gridsearch.py
+```
+There would be new build pipelines which would run these tests.
+The tests for each package would be run in a separate job (so that they can be isolated), and the pipeline would:
+  1. Create a `conda` environment using the appropriate `conda-env.yml`
+  1. Install Fairlearn and its prerequisites into that environment
+  1. Run the tests in the appropriate directory
+
+Whether there would be one pipeline to run all the jobs, or whether we would have one pipeline for each ML package we're testing would have to be decided.
 
 ## Examples in the user guide
 
