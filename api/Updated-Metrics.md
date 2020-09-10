@@ -58,8 +58,8 @@ Users will compute metrics by passing arguments into the constructor:
 0.4
 >>> metrics.by_group
    accuracy_score
-B             0.4
-C             0.8
+B             0.6536
+C             0.213
 ```
 The `by_group` property is a Pandas DataFrame, with the column name set to the `__name__` property of the given metric function, and the rows set to the unique values of the `sensitive_feature=` argument.
 
@@ -69,6 +69,7 @@ Any extra arguments for the metric function would be passed via a `params=` dict
 >>> metrics = GroupedMetrics(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1,
                              indexed_params=['sample_weight'], params=acc_params)
 ```
+We would _not_ provide the basic wrappers such as `accuracy_score_group_summary()`.
 
 ## Obtaining Scalars
 
@@ -87,83 +88,32 @@ We provide methods for turning the `Bunch`es returned from `group_summary()` int
 ```
 We also provide wrappers such as `accuracy_score_difference()`, `accuracy_score_ratio()` and `accuracy_score_min()` for user convenience.
 
-One point which these helpers lack (although it could be added) is the ability to select alternative values for measuring the difference and ratio.
-For example, the user might not be interested in the difference between the maximum and minimum, but the difference from the overall value.
-Or perhaps the difference from a particular group.
-
 ### Proposed Change
 
-The `GroupedMetric` object would have methods for calculating the required scalars.
-First, let us consider the differences.
+The functionality of the `group_max_from_summary()` and `group_min_from_summary()` can be accessed by calling `metrics.by_group.min()` and `metrics.by_group.max()`.
+Providing top level methods for these seems redundant.
 
-We would provide operations to calculate differences in various ways (all of these results are a Pandas Series):
+For `difference_from_summary()` and `ratio_from_summary()` we propose to add appropriate methods.
+First for computing the difference:
 ```python
->>> result.differences()
-B      0.0
-C      0.4406
-Name: TBD dtype: float64
->>> result.differences(relative_to='min')
-B     -0.4406
-C      0.0
-Name: TBD dtype: float64
->>> result.differences(relative_to='min', abs=True)
-B      0.4406
-C      0.0
-Name: TBD dtype: float64
->>> result.differences(relative_to='overall')
-B     -0.2436
-C      0.1870
-Name: TBD dtype: float64
->>> result.differences(relative_to='overall', abs=True)
-B      0.2436
-C      0.1870
-Name: TBD dtype: float64
->>> result.differences(relative_to='group', group='C', abs=True)
-B      0.4406
-C      0.0
-Name: TBD dtype: float64
+>>> metrics.difference()
+accuracy_score 0.4406
+dtype: float64
+>>> metrics.difference(relative_to='overall')
+accuracy_score 0.2563 # max(abs(0.6536-0.4), abs(0.213-0.4))
+dtype: float64
 ```
-The arguments introduced so far for the `differences()` method:
-- `relative_to=` to decide the common point for the differences. Possible values are `'max'` (the default), `'min'`, `'overall'` and `'group'`
-- `group=` to select a group name, only when `relative_to` is set to `'group'`. Default is `None`
-- `abs` to indicate whether to take the absolute value of each entry (defaults to false)
+Note that the result type is a DataFrame (for reasons which will become clear below), and we are adding a `relative_to=` argument.
+This has valid values of `min`, `max` and `overall`.
 
-The user could then use the Pandas methods `max()` and `min()` to reduce these Series objects to scalars.
-However, this will run into issues where the `relative_to` argument ends up pointing to either the maximum or minimum group, which will have a difference of zero.
-That could then be the maximum or minimum value of the set of difference, but probably won't be what the user wants.
-
-To address this case, we should add an extra argument `aggregate=` to the `differences()` method:
+We would similarly have a `ratio()` method:
 ```python
->>> result.differences(aggregate='max')
-0.4406
->>> result.differences(relative_to='overall', aggregate='max')
-0.1870
->>> result.differences(relative_to='overall', abs=True, aggregate='max')
-0.2436
+>>> metrics.ratio()
+accuracy_score 0.3259
+dtype: float64
+>>> metrics.ratio(relative_to='overall')
+accuracy_score 0.6120 # min(abs(0.4/0.6536), abs(0.213/0.6536))
 ```
-If `aggregate=None` (which would be the default), then the result is a Series, as shown above.
-
-There would be a similar method called `ratios()` on the `GroupedMetric` object:
-```python
->>> result.ratios()
-B      1.0
-C      0.3259
-Name: TBD dtype: float64
-```
-The `ratios()` method will take the following arguments:
-- `relative_to=` similar to `differences()`
-- `group=` similar to `differences()`
-- `ratio_order=` determines how to build the ratio. Values are
-   - `sub_unity` to make larger value the denominator
-   - `super_unity` to make larger value the numerator
-   - `from_relative` to make the value specified by `relative_to=` the denominator
-   - `to_relative` to make the value specified by `relative_to=` the numerator
-- `aggregate=` similar to `differences()`
-
-We would also provide the same wrappers such as `accuracy_score_difference()` but expose the extra arguments discussed here.
-One question is whether the default aggregation should be `None` (to match the method), or whether it should default to scalar results similar to the existing methods. 
-
-In the section on Conditional Metrics below, we shall discuss one extra optional argument for `differences()` and `ratios()`.
 
 ## Intersections of Sensitive Features
 
