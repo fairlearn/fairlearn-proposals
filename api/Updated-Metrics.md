@@ -49,43 +49,26 @@ We also provide some wrappers for common metrics from SciKit-Learn:
 
 ### Proposed Change
 
-We do not intend to change the API invoked by the user.
-What will change is the return type.
-Rather than a `Bunch`, we will return a `GroupedMetric` object, which can offer richer functionality.
-
-At this basic level, there is only a slight change to the results seen by the user.
-There are still properties `overall` and `by_groups`, with the same semantics.
-However, the `by_groups` result is now a Pandas Series, and we also provide a `metric_` property to store a reference to the underlying metric:
+We propose to introduce a new object, the `GroupedMetric` (name discussion below).
+Users will compute metrics by passing arguments into the constructor:
 ```python
->>> result = flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1)
->>> result.metric_
-<class 'function'>
->>> result.overall
+>>> metrics = GroupedMetrics(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1)
+<class 'GroupedMetric'>
+>>> metrics.overall
 0.4
->>> result.by_groups
-B      0.6536
-C      0.2130
-Name: accuracy_score dtype: float64
->>> print(type(result.by_groups))
-<class 'pandas.core.series.Series'>
+>>> metrics.by_group
+   accuracy_score
+B             0.4
+C             0.8
 ```
-Constructing the name of the Series could be an issue.
-In the example above, it is the name of the underlying metric function.
-Something as short as the `__name__` could end up being ambiguous, but using the `__module__` property to disambiguate might not match the user's expectations:
-```python
->>> import sklearn.metrics as skm
->>> skm.accuracy_score.__name__
-'accuracy_score'
->>> skm.accuracy_score.__qualname__
-'accuracy_score'
->>> skm.accuracy_score.__module__
-'sklearn.metrics._classification'
-```
-We are seeing some of the actual internal structure here of SciKit-Learn, and the user might not be expecting that.
+The `by_group` property is a Pandas DataFrame, with the column name set to the `__name__` property of the given metric function, and the rows set to the unique values of the `sensitive_feature=` argument.
 
-We would continue to provide convenience wrappers such as `accuracy_score_group_summary` for users, and support passing through arguments along with `indexed_params`.
-There is little advantage to the change at this point.
-This will change in the next section.
+Any extra arguments for the metric function would be passed via a `params=` dictionary (and an `indexed_params=` list):
+```python
+>>> acc_params = { 'sample_weight': weights, 'normalize':False }
+>>> metrics = GroupedMetrics(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1,
+                             indexed_params=['sample_weight'], params=acc_params)
+```
 
 ## Obtaining Scalars
 
