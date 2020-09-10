@@ -137,14 +137,14 @@ If `sensitive_features=` is a DataFrame (or list of Series.... exact supported t
 ```python
 >>> result = group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A)
 >>> result.by_groups
-SF 1    SF 2
-B       M       0.5
-        N       0.7
-        P       0.6
-C       M       0.4
-        N       0.5
-        P       0.5
-Name: sklearn.metrics.accuracy_score, dtype: float64
+           accuracy_score
+SF 1 SF 2
+B    M               0.50
+     N               0.40
+     P               0.55
+C    M               0.45
+     N               0.70
+     P               0.63
 ```
 If a particular combination of sensitive features had no representatives, then we would return `None` for that entry in the Series.
 Although this example has passed a DataFrame in for `sensitive_features=` we should aim to support lists of Series and `numpy.ndarray` as well.
@@ -153,7 +153,8 @@ The `differences()` and `ratios()` methods would act on this Series as before.
 
 ## Conditional (or Segmented) Metrics
 
-For our purposes, Conditional Metrics (alternatively known as Segmented Metrics) do not return single values when aggregation is requested in a call to `differences()` or `ratios()` but instead provide one result for each unique value of the specified condition feature(s).
+For our purposes, Conditional Metrics (alternatively known as Segmented Metrics) are specified separately from the sensitive features, since for users, they add columns to the result.
+Mathematically, they behave like additional sensitive features.
 
 ### Existing Syntax
 
@@ -162,32 +163,30 @@ Users would have to devise the required code themselves
 
 ### Proposed Change
 
-We propose adding an extra argument to `differences()` and `ratios()`, to provide a `condition_on=` argument.
+The `GroupedMetric` constructor will need an additional argument `conditional_features=` to specify the conditional features.
+It will accept similar types to the `sensitive_features=` argument.
+Suppose we have another column called `income_level` with unique values 'Low' and 'High'
+```python
+>>> metric = GroupedMetric(skm.accuracy_score, y_true, y_pred,
+                           sensitive_features=A_1,
+                           conditional_features=income_level)
+>>> metric.overall
+high 0.6
+low  0.4
+dtype: float64
+>>> metric.by_group
+  accuracy_score
+            high   low
+B           0.40  0.50
+C           0.55  0.65
+```
+The `overall` property is now a Pandas series, indexed by the conditional feature values.
+Similarly, the result DataFrame now uses a Pandas MultiIndex for the columns, giving one column for each (combination of) conditional feature.
 
-Suppose we have a DataFrame, `A_3` with three sensitive features: SF 1, SF 2 and Income Band (the latter having values 'Low' and 'High').
-This could represent a loan scenario where decisions can be based on income, but within the income bands, other sensitive groups must be treated equally.
-When `differences()` is invoked with `condition_on=`, the result will not be a scalar, but a Series.
-A user might make calls:
-```python
->>> result = accuracy_score_group_summary(y_true, y_test, sensitive_features=A_3)
->>> result.differences(aggregate=min, condition_on='Income Band')
-Income Band
-Low                 0.3
-High                0.4
-Name: TBD, dtype: float64
-```
-We can also allow `condition_on=` to be a list of names:
-```python
->>> result.differences(aggregate=min, condition_on=['Income Band', 'SF 1'])
-Income Band     SF 1
-Low             B       0.3
-Low             C       0.35
-High            B       0.4
-High            C       0.5
-```
-There may be demand for allowing the sensitive features to be supplied as a `numpy.ndarray` or even a list of `Series` (similar to how the `sensitive_features=` argument may not be a DataFrame).
-To support this, `condition_on=` would need to allow integers (and lists of integers) as inputs, to index the columns.
-If the user is specifying a list for `condition_on=` then we should probably be nice and detect cases where a feature is listed twice (especially if we're allowing both names and column indices).
+Note that it is possible to have multiple sensitive features, and multiple conditional features.
+Operations such as `.max()` and `.differences()` will act on each column.
+Furthermore, the `relative_to=` argument for `.differences()` and `.ratios()` will be relative to the
+relevant value for each column.
 
 ## Multiple Metrics
 
@@ -201,16 +200,16 @@ Users would have to devise their own method
 ### Proposed Change
 
 We allow a list of metric functions in the call to group summary.
-Results become DataFrames, with one column for each metric:
+The properties then add columns to their DataFrames:
 ```python
->>> result = group_summary([skm.accuracy_score, skm.precision_score], y_true, y_pred, sensitive_features=A_1)
+>>> result = GroupedMetric([skm.accuracy_score, skm.precision_score], y_true, y_pred, sensitive_features=A_1)
 >>> result.overall
-      sklearn.metrics.accuracy_score  sklearn.metrics.precision_score
-   0                             0.3                              0.5
+      accuracy_score  precision_score
+   0             0.3              0.5
 >>> result.by_groups
-      sklearn.metrics.accuracy_score  sklearn.metrics.precision_score
-'B'                              0.4                            0.7
-'C'                              0.6                            0.75
+      accuracy_score  precision_score
+'B'              0.4              0.7
+'C'              0.6              0.75
 ```
 This should generalise to the other methods described above.
 
