@@ -219,9 +219,9 @@ For example, for `index_params=` we would have:
 ```python
 indexed_params = [['sample_weight'], ['sample_weight']]
 ```
-In the `**kwargs` a single `extra_args=` argument would be accepted (although not required), which would contain the individual `**kwargs` for each metric:
+Similarly, the `params=` argument would become a list of dictionaries:
 ```python
-extra_args = [ 
+params = [ 
     {
         'sample_weight': [1,2,1,1,3, ...],
         'normalize': False
