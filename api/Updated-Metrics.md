@@ -343,7 +343,28 @@ We will continue to provide these wrappers, based on `GroupedMetric` objects int
 
 ## Support for `make_scorer()`
 
+SciKit-Learn has the concept of 'scorer' functions, which take arguments of `y_true` and `y_pred` and return a scalar score.
+These are used in higher level algorithms such as `GridSearchCV`.
+In order to use these in combination with metrics which can use other arguments (such as the `normalize=` argument on `accuracy_score` above), SciKit-Learn has a `make_scorer()` function , which takes a metric function, along with a list of other arguments, and binds them together to provide a function which just accepts `y_true` and `y_pred` arguments, but will invoke the underlying metric function with the specified extra arguments.
+The higher level algorithms take folds of the input data, and ask the generated scoring function to evaluate these.
 
+There is one problem with this: if a user has a per-sample input (such as sample weights), how do we select the correct values to match the fold?
+When the generated scorer is invoked, the `y_true` and `y_pred` arrays will be a subset of the `sample_weights` bound into the scorer by `make_scorer()`, so the problem is to work out the subset.
+Currently, there is no good way to do this through SciKit-Learn (although a proposed solution is under development).
+There is a [work around described by Adrin on StackOverflow](https://stackoverflow.com/questions/49581104/sklearn-gridsearchcv-not-using-sample-weight-in-score-function), which relies on DataFrames being sliced 'in-place' by SciKit-Learn.
+If all arguments are DataFrames (or Series) when when the generated scorer is invoked, the `index` property of `y_true` can be examined, and used as a mask on the sample weights column (which is bound into the generated scorer).
 
-In the above, we have assumed that we will provide both `group_summary()` and wrappers such as `accuracy_score_group_summary()`, `accuracy_score_difference()`, `accuracy_score_ratio()` and `accuracy_score_group_min()`.
-These wrappers allow the metrics to be passed to SciKit-Learn subroutines such as `make_scorer()`, and they all accept arguments for both the aggregation (as described above) and the underlying metric.
+Our grouped metrics will always face this problem, since we always have the sensitive feature which will need to be passed along.
+We can provide a `make_grouped_scorer()` method with a signature like:
+```python
+make_grouped_scorer(metric_function,
+                    sensitive_feature,
+                    indexed_params,
+                    params,
+                    disparity_measure='difference',
+                    relative_to='min')
+```
+We will only support a single sensitive feature for this, since we need to produce a single scalar result.
+The function will verify that it has been passed a Pandas Series or DataFrame, so that the `index` is available.
+The `disparity_measure=` argument specifies whether the disparity should be measured via the difference or ratio (corresponding to the methods on the `GroupedMetric` object).
+Similarly, the `relative_to=` argument can also be set to `overall` - although in this case it is important to note that this will be the overall value for the fold, and *not* the overall value on the entire dataset.
