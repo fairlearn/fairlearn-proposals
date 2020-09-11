@@ -26,7 +26,9 @@ Here we have shown binary values for a simple classification problem, but they c
 Our basic method is `group_summary()`
 
 ```python
->>> result = flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1)
+>>> result = flm.group_summary(skm.accuracy_score,
+                               y_true, y_pred,
+                               sensitive_features=A_1)
 >>> print(result)
 {'overall': 0.4, 'by_group': {'B': 0.6536, 'C': 0.213}}
 >>> print(type(result))
@@ -37,13 +39,18 @@ Note that the `by_group` key accesses another `Bunch`.
 
 We allow for sample weights (and other arguments which require slicing) via `indexed_params`, and passing through other arguments to the underlying metric function (in this case, `normalize`):
 ```python
->>> flm.group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1, indexed_params=['sample_weight'], sample_weight=weights, normalize=False)
+>>> flm.group_summary(skm.accuracy_score,
+                      y_true, y_pred,
+                      sensitive_features=A_1,
+                      indexed_params=['sample_weight'],
+                      sample_weight=weights, normalize=False)
 {'overall': 20, 'by_group': {'B': 60, 'C': 21}}
 ```
 
 We also provide some wrappers for common metrics from SciKit-Learn:
 ```python
->>> flm.accuracy_score_group_summary(y_true, y_pred, sensitive_features=A_1)
+>>> flm.accuracy_score_group_summary(y_true, y_pred, 
+                                     sensitive_features=A_1)
 {'overall': 0.4, 'by_group': {'B': 0.6536, 'C': 0.213}}
 ```
 
@@ -52,22 +59,29 @@ We also provide some wrappers for common metrics from SciKit-Learn:
 We propose to introduce a new object, the `GroupedMetric` (name discussion below).
 Users will compute metrics by passing arguments into the constructor:
 ```python
->>> metrics = GroupedMetrics(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1)
+>>> metrics = GroupedMetrics(skm.accuracy_score,
+                             y_true, y_pred,
+                             sensitive_features=A_1)
 <class 'GroupedMetric'>
 >>> metrics.overall
-0.4
+    accuracy_score
+0   0.4
 >>> metrics.by_group
    accuracy_score
 B             0.6536
 C             0.213
 ```
-The `by_group` property is a Pandas DataFrame, with the column name set to the `__name__` property of the given metric function, and the rows set to the unique values of the `sensitive_feature=` argument.
+Both properties are now Pandas DataFrames, with the column name set to the `__name__` property of the given metric function.
+The rows of the `by_group` property are set to the unique values of the `sensitive_feature=` argument.
 
 Any extra arguments for the metric function would be passed via a `params=` dictionary (and an `indexed_params=` list):
 ```python
 >>> acc_params = { 'sample_weight': weights, 'normalize':False }
->>> metrics = GroupedMetrics(skm.accuracy_score, y_true, y_pred, sensitive_features=A_1,
-                             indexed_params=['sample_weight'], params=acc_params)
+>>> metrics = GroupedMetrics(skm.accuracy_score,
+                             y_true, y_pred,
+                             sensitive_features=A_1,
+                             indexed_params=['sample_weight'],
+                             params=acc_params)
 ```
 We would _not_ provide the basic wrappers such as `accuracy_score_group_summary()`.
 
@@ -124,7 +138,8 @@ To achieve this, users currently need to write something along the lines of:
 ```python
 >>> A_combined = A['SF 1'] + '-' + A['SF 2']
 
->>> accuracy_score_group_summary(y_true, y_pred, sensitive_features=A_combined)
+>>> accuracy_score_group_summary(y_true, y_pred,
+                                 sensitive_features=A_combined)
 { 'overall': 0.4, by_groups : { 'B-M':0.4, 'B-N':0.5, 'B-P':0.5, 'C-M':0.5, 'C-N': 0.6, 'C-P':0.7 } }
 ```
 This is unecessarily cumbersome.
@@ -135,7 +150,9 @@ It is also possible that some combinations might not appear in the data (especia
 
 If `sensitive_features=` is a DataFrame (or list of Series.... exact supported types are TBD), we can generate our results in terms of a MultiIndex. Using the `A` DataFrame defined above, a user might write:
 ```python
->>> result = group_summary(skm.accuracy_score, y_true, y_pred, sensitive_features=A)
+>>> result = group_summary(skm.accuracy_score,
+                           y_true, y_pred,
+                           sensitive_features=A)
 >>> result.by_groups
            accuracy_score
 SF 1 SF 2
@@ -151,7 +168,7 @@ Although this example has passed a DataFrame in for `sensitive_features=` we sho
 
 The `differences()` and `ratios()` methods would act on this Series as before.
 
-## Conditional (or Segmented) Metrics
+## Conditional Metrics
 
 For our purposes, Conditional Metrics (alternatively known as Segmented Metrics) are specified separately from the sensitive features, since for users, they add columns to the result.
 Mathematically, they behave like additional sensitive features.
@@ -167,26 +184,41 @@ The `GroupedMetric` constructor will need an additional argument `conditional_fe
 It will accept similar types to the `sensitive_features=` argument.
 Suppose we have another column called `income_level` with unique values 'Low' and 'High'
 ```python
->>> metric = GroupedMetric(skm.accuracy_score, y_true, y_pred,
+>>> metric = GroupedMetric(skm.accuracy_score,
+                           y_true, y_pred,
                            sensitive_features=A_1,
                            conditional_features=income_level)
 >>> metric.overall
-high 0.6
-low  0.4
+       accuracy_score
+high            0.46
+low             0.61
 dtype: float64
 >>> metric.by_group
-  accuracy_score
+        accuracy_score
             high   low
 B           0.40  0.50
 C           0.55  0.65
 ```
-The `overall` property is now a Pandas series, indexed by the conditional feature values.
+The `overall` property now has rows corresponding to the unique values of the conditional feature(s).
 Similarly, the result DataFrame now uses a Pandas MultiIndex for the columns, giving one column for each (combination of) conditional feature.
 
 Note that it is possible to have multiple sensitive features, and multiple conditional features.
 Operations such as `.max()` and `.differences()` will act on each column.
 Furthermore, the `relative_to=` argument for `.differences()` and `.ratios()` will be relative to the
 relevant value for each column.
+
+As a final note, it would also be possible to put the conditional features into the rows, at a 'higher' level than the sensitive features.
+The resultant DataFrame would look like:
+```python
+>>> metric.by_group
+        accuracy_score
+high  B           0.40
+      C           0.55
+low   B           0.50
+      C           0.65
+```
+This might be more natural for some purposes, and we have not finally decided on which pattern to use.
+However, the `.stack()` and `.unstack()` methods of DataFrame can be used to flip between them.
 
 ## Multiple Metrics
 
@@ -202,7 +234,9 @@ Users would have to devise their own method
 We allow a list of metric functions in the call to group summary.
 The properties then add columns to their DataFrames:
 ```python
->>> result = GroupedMetric([skm.accuracy_score, skm.precision_score], y_true, y_pred, sensitive_features=A_1)
+>>> result = GroupedMetric([skm.accuracy_score, skm.precision_score],
+                            y_true, y_pred,
+                            sensitive_features=A_1)
 >>> result.overall
       accuracy_score  precision_score
    0             0.3              0.5
@@ -248,13 +282,16 @@ Arguments such as `index_params=` and `relative_to=` (along with the allowed val
 
 ## User Conveniences
 
-In addition to having the underlying metric be passed as a function, we can consider allowing the metric function given to `group_summary()` to be represented by a string.
+In addition to having the underlying metric be passed as a function, we can consider allowing the metric function given to the `GroupedMetric` constructor to be represented by a string.
 We would provide a mapping of strings to suitable functions.
-This would make the following all equivalent:
+This would make the following equivalent:
 ```python
->>> r1 = group_summary(sklearn.accuracy_score, y_true, y_pred, sensitive_features=A_1)
->>> r2 = group_summary('accuracy_score', y_true, y_pred, sensitive_features=A_1)
->>> r3 = accuracy_score_group_summary( y_true, y_pred, sensitive_features=A_1)
+>>> r1 = GroupedMetric(sklearn.accuracy_score,
+                       y_true, y_pred, 
+                       sensitive_features=A_1)
+>>> r2 = group_summary('accuracy_score',
+                       y_true, y_pred, 
+                       sensitive_features=A_1)
 ```
 We would also allow mixtures of strings and functions in the multiple metric case.
 
@@ -293,25 +330,20 @@ However, this risks tying Fairlearn to particular versions of SciKit-Learn.
 Unfortunately, the generality of `GroupedMetric` means that we cannot solve this for the user.
 It cannot even tell if it is evaluating a classification or regression problem.
 
-## The Wrapper Functions
+## Convenience Functions
+
+We currently provide functions for evaluating common fairness metrics (where `X` can be `ratio` or `difference`):
+
+- `demographic_parity_X()`
+- `true_positive_rate_X()`
+- `false_positive_rate_X()`
+- `equalized_odds_X()`
+
+We will continue to provide these wrappers, based on `GroupedMetric` objects internally.
+
+## Support for `make_scorer()`
+
+
 
 In the above, we have assumed that we will provide both `group_summary()` and wrappers such as `accuracy_score_group_summary()`, `accuracy_score_difference()`, `accuracy_score_ratio()` and `accuracy_score_group_min()`.
 These wrappers allow the metrics to be passed to SciKit-Learn subroutines such as `make_scorer()`, and they all accept arguments for both the aggregation (as described above) and the underlying metric.
-
-We also provide wrappers for specific fairness metrics used in the literature such `demographic_parity_difference()` and `equalized_odds_difference()` (although even then we should add the extra `relative_to=` and `group=` arguments).
-
-
-## Methods or Functions
-
-Since the `GroupMetric` object contains no private members, it is not clear that it needs to be its own object.
-We could continue to use a `Bunch` but make the `group_by` entry/property return a Pandas Series (which would embed all the other information we might need).
-In the multiple metric case, we would still return a single `Bunch` but the properties would both be DataFrames.
-
-The question is whether users prefer:
-```python
->>> diff = group_summary(skm.recall_score, y_true, y_pred, sensitive_features=A).difference(aggregate='max')
-```
-or
-```python
->>> diff = difference(group_summary(skm.recall_score, y_true, y_pred, sensitive_features=A), aggregate='max')
-```
