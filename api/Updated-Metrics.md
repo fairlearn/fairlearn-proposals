@@ -214,7 +214,7 @@ The properties then add columns to their DataFrames:
 This should generalise to the other methods described above.
 
 One open question is how extra arguments should be passed to the individual metric functions, including how to handle the `indexed_params=`.
-A possible solution is to have lists, with indices corresponding to the list of functions supplied to `group_summary()`
+A possible solution is to have lists, with indices corresponding to the list of functions supplied to the `GroupedMetric` constructor.
 For example, for `index_params=` we would have:
 ```python
 indexed_params = [['sample_weight'], ['sample_weight']]
@@ -236,24 +236,15 @@ If users had a lot of functions with a lot of custom arguments, this could get e
 
 ## Naming
 
-The names `group_summary()` and `GroupedMetric` are not necessarily inspired, and there may well be better alternatives.
-Changes to these would ripple throughout the module, so agreeing on these is an important first step.
-
-Some possibilities for the function:
-  - `group_summary()`
-  - `metric_by_groups()`
-  - `calculate_group_metric()`
-  - ?
-
-And for the result object:
+The name `GroupedMetric` is not especially inspired.
+Some possible alternatives:
   - `GroupedMetric`
   - `GroupMetricResult`
   - `MetricByGroups`
   - ?
 
 Other names are also up for debate.
-However, things like the wrappers `accuracy_score_group_summary()` will hinge on the names chosen above.
-Arguments such as `index_params=` and `ratio_order=` (along with the allowed values of the latter) are important, but narrower in impact.
+Arguments such as `index_params=` and `relative_to=` (along with the allowed values of the latter) are important, but narrower in impact.
 
 ## User Conveniences
 
@@ -272,16 +263,16 @@ We would also allow mixtures of strings and functions in the multiple metric cas
 Throughout this document, we have been describing the case of classification metrics.
 However, we do not actually require this.
 It is the underlying metric function which gives meaning to the `y_true` and `y_pred` lists.
-So long as these are of equal length (and equal in length to the sensitive feature list - which _will_ be treated as a categorical), then `group_summary()` does not actually care about their datatypes.
+So long as these are of equal length (and equal in length to the sensitive feature list - which _will_ be treated as a categorical), then `GroupedMetric` does not actually care about their datatypes.
 For example, each entry in `y_pred` could be a dictionary of predicted classes and accompanying probabilities.
 Or the user might be working on a regression problem, and both `y_true` and `y_pred` would be floating point numbers (or `y_pred` might even be a tuple of predicted value and error).
-So long as the underlying metric understands the data structures, `group_summary()` will not care.
+So long as the underlying metric understands the data structures, `GroupedMetric` will not care.
 
-There will be an effect on the `GroupedMetric` result object.
+There will be an effect on the `difference()` and `ratio()` methods.
 Although the `overall` and `by_groups` properties will work fine, the `differences()` and `ratios()` methods may not.
 After all, what does "take the ratio of two confusion matrices" even mean?
 We should try to trap these cases, and throw a meaningful exception (rather than propagating whatever exception happens to emerge from the underlying libraries).
-Since we know that `differences()` and `ratios()` will only work when the metric has produced scalar results, which should be a straightforward test using [`isscalar()` from Numpy](https://numpy.org/doc/stable/reference/generated/numpy.isscalar.html).
+Since we know that `difference()` and `ratio()` will only work when the metric has produced scalar results, which should be a straightforward test using [`isscalar()` from Numpy](https://numpy.org/doc/stable/reference/generated/numpy.isscalar.html).
 
 ## Pitfalls
 
@@ -299,7 +290,7 @@ If we implement the convenience strings-for-functions piece mentioned above, the
 We could even generate the argument ourselves if the user does not specify it.
 However, this risks tying Fairlearn to particular versions of SciKit-Learn.
 
-Unfortunately, the generality of `group_summary()` means that we cannot solve this for the user.
+Unfortunately, the generality of `GroupedMetric` means that we cannot solve this for the user.
 It cannot even tell if it is evaluating a classification or regression problem.
 
 ## The Wrapper Functions
