@@ -327,7 +327,38 @@ However, this risks tying Fairlearn to particular versions of SciKit-Learn.
 Unfortunately, the generality of `GroupedMetric` means that we cannot solve this for the user.
 It cannot even tell if it is evaluating a classification or regression problem.
 
+## Creating Derived Metrics
 
+Rather than a `GroupedMetric` object, users will often want to have a function which yields a scalar.
+
+### Existing Syntax
+
+We currently provide a `make_derived_metric()` function which can build a callable object which does this:
+```python
+fhalf_score = functools.partial(skm.fbeta_score, beta=0.5)
+
+custom_difference1 = make_derived_metric(
+    difference_from_summary,
+    make_metric_group_summary(fhalf_score))
+```
+Notice that we have had to put a wrapper around `fbeta_score` since `beta=` is a required parameter, but we do not support anything beyond `y_true`, `y_pred` and `sensitive_features` as arguments.
+
+We use this to provide helper functions such as `accuracy_score_difference()` and `accuracy_score_group_min()`
+
+### Proposed Syntax
+
+We should be able to provide a function builder of the following form:
+```python
+fbeta_diff = make_derived_metric(
+    'difference',
+    skm.fbeta_score,
+    index_params=['sample_weight']
+)
+
+print(fbeta_diff(y_true, y_pred, sensitive_features=A_1, sample_weight=weights, beta=0.5))
+```
+Since the goal of this function is to produce scalars, we would not support supplying multiple underlying metrics.
+The derived metrics would correspond to the various methods described above which compute scalars from the `GroupedMetrics` object.
 
 
 ## Support for `make_scorer()`
