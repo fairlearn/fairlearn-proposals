@@ -64,8 +64,8 @@ Users will compute metrics by passing arguments into the constructor:
                              sensitive_features=A_1)
 <class 'GroupedMetric'>
 >>> metrics.overall
-    accuracy_score
-0   0.4
+          accuracy_score
+overall   0.4
 >>> metrics.by_group
    accuracy_score
 B             0.6536
@@ -104,28 +104,26 @@ We also provide wrappers such as `accuracy_score_difference()`, `accuracy_score_
 
 ### Proposed Change
 
-The functionality of the `group_max_from_summary()` and `group_min_from_summary()` can be accessed by calling `metrics.by_group.min()` and `metrics.by_group.max()`.
-Providing top level methods for these seems redundant.
+Although the functionality of the `group_max_from_summary()` and `group_min_from_summary()` can be accessed by calling `metrics.by_group.min()` and `metrics.by_group.max()`, we will provide `.group_min()` and `.group_max()` methods for completeness.
 
-For `difference_from_summary()` and `ratio_from_summary()` we propose to add appropriate methods.
+For `difference_from_summary()` and `ratio_from_summary()` we will add methods to calculate the values as we do now, and also relative to the `overall` value.
 First for computing the difference:
 ```python
 >>> metrics.difference()
 accuracy_score 0.4406
 dtype: float64
->>> metrics.difference(relative_to='overall')
+>>> metrics.difference_to_overall()
 accuracy_score 0.2563 # max(abs(0.6536-0.4), abs(0.213-0.4))
 dtype: float64
 ```
-Note that the result type is a DataFrame (for reasons which will become clear below), and we are adding a `relative_to=` argument.
-This has valid values of `min`, `max` and `overall`.
+Note that the result type is a DataFrame (for reasons which will become clear below).
 
-We would similarly have a `ratio()` method:
+We would similarly have `ratio()` and `ratio_to_overall()`methods:
 ```python
 >>> metrics.ratio()
 accuracy_score 0.3259
 dtype: float64
->>> metrics.ratio(relative_to='overall')
+>>> metrics.ratio_to_overall()
 accuracy_score 0.6120 # min(abs(0.4/0.6536), abs(0.213/0.6536))
 ```
 
@@ -203,9 +201,8 @@ The `overall` property now has rows corresponding to the unique values of the co
 Similarly, the result DataFrame now uses a Pandas MultiIndex for the columns, giving one column for each (combination of) conditional feature.
 
 Note that it is possible to have multiple sensitive features, and multiple conditional features.
-Operations such as `.max()` and `.differences()` will act on each column.
-Furthermore, the `relative_to=` argument for `.differences()` and `.ratios()` will be relative to the
-relevant value for each column.
+Operations such as `.group_max()` and `.difference_to_overall()` will act on each column.
+
 
 As a final note, it would also be possible to put the conditional features into the rows, at a 'higher' level than the sensitive features.
 The resultant DataFrame would look like:
@@ -238,8 +235,8 @@ The properties then add columns to their DataFrames:
                             y_true, y_pred,
                             sensitive_features=A_1)
 >>> result.overall
-      accuracy_score  precision_score
-   0             0.3              0.5
+         accuracy_score  precision_score
+overall             0.3              0.5
 >>> result.by_groups
       accuracy_score  precision_score
 'B'              0.4              0.7
@@ -278,7 +275,7 @@ Some possible alternatives:
   - ?
 
 Other names are also up for debate.
-Arguments such as `index_params=` and `relative_to=` (along with the allowed values of the latter) are important, but narrower in impact.
+Arguments such as `index_params=` are important, but narrower in impact.
 
 ## User Conveniences
 
@@ -330,16 +327,8 @@ However, this risks tying Fairlearn to particular versions of SciKit-Learn.
 Unfortunately, the generality of `GroupedMetric` means that we cannot solve this for the user.
 It cannot even tell if it is evaluating a classification or regression problem.
 
-## Convenience Functions
 
-We currently provide functions for evaluating common fairness metrics (where `X` can be `ratio` or `difference`):
 
-- `demographic_parity_X()`
-- `true_positive_rate_X()`
-- `false_positive_rate_X()`
-- `equalized_odds_X()`
-
-We will continue to provide these wrappers, based on `GroupedMetric` objects internally.
 
 ## Support for `make_scorer()`
 
@@ -369,3 +358,15 @@ We will only support a single sensitive feature for this, since we need to produ
 The function will verify that it has been passed a Pandas Series or DataFrame, so that the `index` is available.
 The `disparity_measure=` argument specifies whether the disparity should be measured via the difference or ratio (corresponding to the methods on the `GroupedMetric` object).
 Similarly, the `relative_to=` argument can also be set to `overall` - although in this case it is important to note that this will be the overall value for the fold, and *not* the overall value on the entire dataset.
+
+
+## Convenience Functions
+
+We currently provide functions for evaluating common fairness metrics (where `X` can be `ratio` or `difference`):
+
+- `demographic_parity_X()`
+- `true_positive_rate_X()`
+- `false_positive_rate_X()`
+- `equalized_odds_X()`
+
+We will continue to provide these wrappers, based on `GroupedMetric` objects internally.
