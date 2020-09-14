@@ -353,6 +353,7 @@ When the generated scorer is invoked, the `y_true` and `y_pred` arrays will be a
 Currently, there is no good way to do this through SciKit-Learn (although a proposed solution is under development).
 There is a [work around described by Adrin on StackOverflow](https://stackoverflow.com/questions/49581104/sklearn-gridsearchcv-not-using-sample-weight-in-score-function), which relies on DataFrames being sliced 'in-place' by SciKit-Learn.
 If all arguments are DataFrames (or Series) when when the generated scorer is invoked, the `index` property of `y_true` can be examined, and used as a mask on the sample weights column (which is bound into the generated scorer).
+A more general solution is [under discussion within the SciKit-Learn community](https://scikit-learn-enhancement-proposals.readthedocs.io/en/latest/slep006/proposal.html).
 
 Our grouped metrics will always face this problem, since we always have the sensitive feature which will need to be passed along.
 We can provide a `make_grouped_scorer()` method with a signature like:
