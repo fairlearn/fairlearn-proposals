@@ -289,7 +289,7 @@ This would make the following equivalent:
 >>> r1 = GroupedMetric(sklearn.accuracy_score,
                        y_true, y_pred, 
                        sensitive_features=A_1)
->>> r2 = group_summary('accuracy_score',
+>>> r2 = GroupedMetric('accuracy_score',
                        y_true, y_pred, 
                        sensitive_features=A_1)
 ```
