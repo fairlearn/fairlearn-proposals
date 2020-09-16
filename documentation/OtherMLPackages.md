@@ -7,6 +7,7 @@ However, we do not currently have tests proving that we do offer this sort of co
 ## Target Packages
 
 We should show compatibility with the following ML packages:
+  - EBM
   - XGBoost
   - LightGBM
   - TensorFlow
