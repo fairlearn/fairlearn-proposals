@@ -2,6 +2,9 @@
 
 This is an update for the existing metrics document, which is being left in place for now as a point of comparison.
 
+We are having meetings to discuss this proposal.
+Please reach out to `riedgar@microsoft.com` if you would like to join.
+
 ## Assumed data
 
 In the following we assume that we have variables of the following form defined:
