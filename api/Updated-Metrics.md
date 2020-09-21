@@ -77,15 +77,16 @@ C             0.213
 Both properties are now Pandas DataFrames, with the column name set to the `__name__` property of the given metric function.
 The rows of the `by_group` property are set to the unique values of the `sensitive_feature=` argument.
 
-Any extra arguments for the metric function would be passed via a `params=` dictionary (and an `indexed_params=` list):
+Extra parameters for the metric function are passed in via the `sample_params=` and `params=` arguments.
+The `params=` arguments are broadcast, while the `sample_params=` arguments will be sliced along with the `y_true` and `y_pred` arguments in accordance with the sensitive feature vector.
 ```python
->>> acc_params = { 'sample_weight': weights, 'normalize':False }
 >>> metrics = GroupedMetrics(skm.accuracy_score,
                              y_true, y_pred,
                              sensitive_features=A_1,
-                             indexed_params=['sample_weight'],
-                             params=acc_params)
+                             sample_params={'sample_weight': weight},
+                             params={'normalize': False})
 ```
+A key which appears in both `sample_params=` and `params=` will be an error.
 We would _not_ provide the basic wrappers such as `accuracy_score_group_summary()`.
 
 ## Obtaining Scalars
@@ -109,25 +110,27 @@ We also provide wrappers such as `accuracy_score_difference()`, `accuracy_score_
 
 Although the functionality of the `group_max_from_summary()` and `group_min_from_summary()` can be accessed by calling `metrics.by_group.min()` and `metrics.by_group.max()`, we will provide `.group_min()` and `.group_max()` methods for completeness.
 
-For `difference_from_summary()` and `ratio_from_summary()` we will add methods to calculate the values as we do now, and also relative to the `overall` value.
+For differences and ratios, we will provide `.difference()` and `.ratio()` methods.
+These will take an optional argument of `method=`, to indicate how the values are to be calculated (defaulting to `minmax`)
 First for computing the difference:
 ```python
 >>> metrics.difference()
-accuracy_score 0.4406
+      accuracy_score
+all   0.4406
 dtype: float64
->>> metrics.difference_to_overall()
-accuracy_score 0.2563 # max(abs(0.6536-0.4), abs(0.213-0.4))
+>>> metrics.difference(method='to_overall')
+accuracy_score   0.2563 # max(abs(0.6536-0.4), abs(0.213-0.4))
 dtype: float64
 ```
-Note that the result type is a DataFrame (for reasons which will become clear below).
-
-We would similarly have `ratio()` and `ratio_to_overall()`methods:
+Note that the result type is a Series (for reasons which will become clear below).
+The `ratio()` method would behave in a similar way:
 ```python
 >>> metrics.ratio()
-accuracy_score 0.3259
-dtype: float64
->>> metrics.ratio_to_overall()
-accuracy_score 0.6120 # min(abs(0.4/0.6536), abs(0.213/0.6536))
+        accuracy_score
+all     0.3259
+>>> metrics.ratio(method='to_overall')
+       accuracy_score
+all    0.6120 # min(abs(0.4/0.6536), abs(0.213/0.6536))
 ```
 
 ## Intersections of Sensitive Features
@@ -165,9 +168,10 @@ C    M               0.45
      P               0.63
 ```
 If a particular combination of sensitive features had no representatives, then we would return `None` for that entry in the Series.
+Alternatively, we could skip that entry in the DataFrame - this point is **still TBD**.
 Although this example has passed a DataFrame in for `sensitive_features=` we should aim to support lists of Series and `numpy.ndarray` as well.
 
-The `differences()` and `ratios()` methods would act on this Series as before.
+The `differences()` and `ratios()` methods would act on this DataFrame as before.
 
 ## Conditional Metrics
 
@@ -191,34 +195,34 @@ Suppose we have another column called `income_level` with unique values 'Low' an
                            conditional_features=income_level)
 >>> metric.overall
        accuracy_score
-high            0.46
-low             0.61
+High            0.46
+Low             0.61
 dtype: float64
 >>> metric.by_group
-        accuracy_score
-            high   low
-B           0.40  0.50
-C           0.55  0.65
+          accuracy_score
+High   B            0.40 
+       C            0.55
+Low    B            0.55
+       C            0.65
 ```
 The `overall` property now has rows corresponding to the unique values of the conditional feature(s).
 Similarly, the result DataFrame now uses a Pandas MultiIndex for the columns, giving one column for each (combination of) conditional feature.
 
 Note that it is possible to have multiple sensitive features, and multiple conditional features.
-Operations such as `.group_max()` and `.difference_to_overall()` will act on each column.
-
-
-As a final note, it would also be possible to put the conditional features into the rows, at a 'higher' level than the sensitive features.
-The resultant DataFrame would look like:
+Operations such as `.group_max()` and `.difference()` will act on each combination of conditional feature values, and aggregate across the sensitive features.
+So for example
 ```python
->>> metric.by_group
+>>> metric.difference(method='minmax')
         accuracy_score
-high  B           0.40
-      C           0.55
-low   B           0.50
-      C           0.65
+High              0.15
+Low               0.10
+>>> metric.difference(method='overall')
+        accuracy_score
+High              0.09
+Low               0.06
 ```
-This might be more natural for some purposes, and we have not finally decided on which pattern to use.
-However, the `.stack()` and `.unstack()` methods of DataFrame can be used to flip between them.
+
+If it users found it more convenient to have the conditional features be sub-columns on the metrics, then the `unstack()` method of the pandas DataFrame can be used.
 
 ## Multiple Metrics
 
@@ -227,7 +231,7 @@ Finally, we can also allow for the evaluation of multiple metrics at once.
 ### Existing Syntax
 
 This is not supported.
-Users would have to devise their own method
+Users would have to devise their own means.
 
 ### Proposed Change
 
@@ -245,28 +249,21 @@ overall             0.3              0.5
 'B'              0.4              0.7
 'C'              0.6              0.75
 ```
-This should generalise to the other methods described above.
+This should generalise to the other methods described above - extra metric functions add extra columns to the resultant DataFrames (this is why we made all results to be DataFrames, even if the actual result was a scalar).
 
-One open question is how extra arguments should be passed to the individual metric functions, including how to handle the `indexed_params=`.
-A possible solution is to have lists, with indices corresponding to the list of functions supplied to the `GroupedMetric` constructor.
-For example, for `index_params=` we would have:
+When users wish to use the `sample_params=` and `params=` arguments, then they should pass in lists of dictionaries, matching the functions by index:
 ```python
-indexed_params = [['sample_weight'], ['sample_weight']]
+metric_fns = [skm.accuracy_score, skm.precision_score]
+sample_params = [{'sample_weight':weight}], [{'sample_weight':weight}]]
+params = [{ 'normalize': False }, {'pos_label' = 'Granted'}]
+result = GroupedMetric(metric_fns,
+                       y_true, y_pred,
+                       sensitive_features=A_1,
+                       sample_params=sample_params,
+                       params=params)
 ```
-Similarly, the `params=` argument would become a list of dictionaries:
-```python
-params = [ 
-    {
-        'sample_weight': [1,2,1,1,3, ...],
-        'normalize': False
-    },
-    {
-        'sample_weight': [1,2,1,1,3, ... ],
-        'pos_label' = 'Granted'
-    }
-]
-```
-If users had a lot of functions with a lot of custom arguments, this could get error-prone and difficult to debug.
+The length of the lists would be required to match.
+This is somewhat repetitious (see the `sample_weight` above), but trying to share some arguments between functions is likely to lead to a worse mess.
 
 ## Naming
 
@@ -278,7 +275,7 @@ Some possible alternatives:
   - ?
 
 Other names are also up for debate.
-Arguments such as `index_params=` are important, but narrower in impact.
+Arguments such as `method='minmax'` are important, but narrower in impact.
 
 ## User Conveniences
 
@@ -355,12 +352,13 @@ We should be able to provide a function builder of the following form:
 fbeta_diff = make_derived_metric(
     'difference',
     skm.fbeta_score,
-    index_params=['sample_weight']
+    sample_param_names=['sample_weight']
 )
 
 print(fbeta_diff(y_true, y_pred, sensitive_features=A_1, sample_weight=weights, beta=0.5))
 ```
 Since the goal of this function is to produce scalars, we would not support supplying multiple underlying metrics.
+We also do not propose to support conditional features at the present time (the appropriate behaviour is not clear).
 The derived metrics would correspond to the various methods described above which compute scalars from the `GroupedMetrics` object.
 
 
