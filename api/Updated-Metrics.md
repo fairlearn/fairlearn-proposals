@@ -191,9 +191,9 @@ It will accept similar types to the `sensitive_features=` argument.
 Suppose we have another column called `income_level` with unique values 'Low' and 'High'
 ```python
 >>> metric = MetricFrame(skm.accuracy_score,
-                           y_true, y_pred,
-                           sensitive_features=A_1,
-                           control_features=income_level)
+                         y_true, y_pred,
+                         sensitive_features=A_1,
+                         control_features=income_level)
 >>> metric.overall
        accuracy_score
 High            0.46
@@ -240,8 +240,8 @@ We allow a dictionary of metric functions in the call to group summary.
 The properties then extend themselves:
 ```python
 >>> result = MetricFrame({'accuracy':skm.accuracy_score, 'precision':skm.precision_score},
-                            y_true, y_pred,
-                            sensitive_features=A_1)
+                         y_true, y_pred,
+                         sensitive_features=A_1)
 >>> result.overall
 accuracy       0.3
 precision      0.5
@@ -257,11 +257,11 @@ This should generalise to the other methods described above.
 When users wish to use the `sample_params=` arguments, then they should pass in a dictionary of dictionaries, matching the functions by key:
 ```python
 metric_fns = { 'accuracy':skm.accuracy_score, 'precision':skm.precision_score}
-sample_params = { 'accuracy':{'sample_weight':weight}], 'precision':{'sample_weight':weight}}
+sample_params = { 'accuracy':{'sample_weight':weight}, 'precision':{'sample_weight':weight}}
 result = MetricFrame(metric_fns,
-                       y_true, y_pred,
-                       sensitive_features=A_1,
-                       sample_params=sample_params)
+                     y_true, y_pred,
+                     sensitive_features=A_1,
+                     sample_params=sample_params)
 ```
 The outer set of dictionary keys given to `sample_params=` should be a subset of the keys of the metric function dictioary.
 This is somewhat repetitious (see the `sample_weight` above), but trying to share some arguments between functions is likely to lead to a worse mess.
